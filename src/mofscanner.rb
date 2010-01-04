@@ -1,10 +1,33 @@
+#
+# mofscanner.rb
+#
+# A scanner module for MOF files
+# to extend the Scanner class (via include)
+#
+# functions offered:
+#  parse( file ) : start parsing of file
+#  next_token    : return next [token,value] pair
+#  on_error      : report error
+#
+# Class variables:
+#
+# @file: file being scanned
+# @name: name of file
+# @lineno: current line number in file (for error reports)
+# @iconv: non-nil if iconv needed (i.e. Windows utf-16 mof files)
+# @fstack: stack of [ @file, @name, @lineno, @iconv ] for open files (to handle includes)
+# @q: Queue of [token,value] pairs, [false,false] denotes EOF
+#
+
+require 'iconv'
+
 module Mofscanner
   def fill_queue
     if @file.eof?
 #      $stderr.puts "eof ! #{@fstack.size}"
       @file.close unless @file == $stdin
       unless @fstack.empty?
-	@file, @name, @lineno = @fstack.shift
+	@file, @name, @lineno, @iconv, $/ = @fstack.shift
 #	$stderr.puts "fill! #{@fstack.size}, #{@file}@#{@lineno}"
         return fill_queue
       end
@@ -15,9 +38,11 @@ module Mofscanner
     return true unless str
     @lineno += 1
 
-#    $stderr.puts "fill_queue(#{str})"
-
-    scanner = StringScanner.new(str.chomp!)
+#    $stderr.puts "fill_queue(#{str.split('').inspect})"
+    str.chomp!  # remove $/
+    str = Iconv.conv( "ISO-8859-1", @iconv, str ) if @iconv
+    $stderr.puts "scan(#{str})"
+    scanner = StringScanner.new(str)
 
     until scanner.empty?
 #      $stderr.puts "#{@q.size}:\"#{scanner.rest}\""
@@ -164,7 +189,7 @@ module Mofscanner
   
   def on_error(*args)
     $stderr.puts "Err #{@name}@#{@lineno}: args=#{args.inspect}"
-    raise
+    raise ParseError
   end
 
 end # module
