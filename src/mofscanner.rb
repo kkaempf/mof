@@ -156,12 +156,6 @@ module Mofscanner
 	when "translatable": @q.push [:TRANSLATABLE, m]
 	when "true": @q.push [:booleanValue, true]
 	else
-	  x = m.split "_"
-	  if x.size > 1
-	    @q.push( [:IDENTIFIER, x.shift] )
-	    @q.push( ["_", "_"] )
-	    m = x.join("_")
-	  end
 	  @q.push( [:IDENTIFIER, m] )
 	end # case m.downcase
       
@@ -173,8 +167,12 @@ module Mofscanner
     true
   end
 
-  def parse( file )
-    open file
+  def parse( files )
+    # open files in reverse order
+    #  open() will stack them and parse starts in right order
+    files.reverse_each do |file|
+      open file, :argv
+    end
     @q = []
     do_parse
   end
@@ -189,7 +187,7 @@ module Mofscanner
   
   def on_error(*args)
     $stderr.puts "Err #{@name}@#{@lineno}: args=#{args.inspect}"
-    raise ParseError
+    raise ParseError(args)
   end
 
 end # module

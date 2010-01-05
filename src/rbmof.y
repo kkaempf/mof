@@ -173,8 +173,8 @@ rule
         ;
 
   className
-	: schemaName "_" IDENTIFIER /* NO whitespace ! */
-	  { result = val[0]+val[1]+val[2] }
+	: IDENTIFIER /* must be <schema>_<classname> */
+	  { raise ParseError, "Class name must be prefixed by '<schema>_'" unless val[0].include?("_") }
         ;
 
   alias
@@ -449,18 +449,6 @@ rule
 	: qualifierList_opt keyname "=" initializer ";"
         ;
 
-  /* 
-   * These productions do not allow whitespace between the terms:
-   */
-
-  /* Context:
-   * Schema name must not include "_" !
-   */
-
-  schemaName
-	: IDENTIFIER
-        ;
-
 end
 
 ---- header ----
@@ -544,6 +532,7 @@ def open name, origin = nil
     $/ = "\r\0\n\0"
   else
     @file.rewind
+    @iconv = nil
     $/ = "\n"
   end
   @strict = :windows if @iconv
@@ -556,26 +545,25 @@ end
 help = false
 debug = false
 includes = [Pathname.new "."]
-moffile = nil
+moffiles = []
 
 while ARGV.size > 0
   case opt = ARGV.shift
     when "-h":
       $stderr.puts "Ruby MOF compiler"
-      $stderr.puts "rbmof [-h] [-d] [-I <dir>] [<moffile>]"
+      $stderr.puts "rbmof [-h] [-d] [-I <dir>] [<moffiles>]"
       $stderr.puts "Compiles <moffile>"
       $stderr.puts "\t-h  this help"
       $stderr.puts "\t-d  debug"
       $stderr.puts "\t-I <dir>  include dir"
-      $stderr.puts "\t<moffile>  file to read (else use $stdin)"
+      $stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
       exit 0
     when "-d": debug = true
     when "-I": includes << Pathname.new(ARGV.shift)
     when /^-.+/:
       $stderr.puts "Undefined option #{opt}"
     else
-      $stderr.puts "Multiple input files given, discarding previous #{moffile}" if moffile
-      moffile = opt
+      moffiles << opt
   end
 end
 
@@ -583,18 +571,19 @@ parser = Mofparser.new debug, includes
 
 puts "Mofparser starting"
 
-moffile = $stdin unless moffile
+moffiles << $stdin if moffiles.empty?
 
 begin
-  val = parser.parse( moffile )
+  val = parser.parse( moffiles )
   puts "Accept!"
 rescue ParseError
-  puts "#{parser.name}:#{parser.lineno}: #{$!}"
+  STDERR.puts "#{parser.name}:#{parser.lineno}: #{$!}"
   exit 1
 rescue InvalidMofSyntax => e
-  puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
+  STDERR.puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
   exit 1
-rescue Exception => e
-  puts "unexpected error #{e} ?!"
+rescue
+  STDERR.puts "unexpected error #{$!} ?!"
+  STDERR.puts $@
   exit 1
 end
