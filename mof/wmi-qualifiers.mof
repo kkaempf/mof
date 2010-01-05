@@ -1,0 +1,17 @@
+//
+// Windows specific qualifiers
+//
+
+Qualifier Dynamic : boolean = false, 
+    Scope(class, association, indication);
+
+Qualifier PropertyContext : string = Null, 
+    Scope(property);
+
+Qualifier Implemented : boolean = false, 
+    Scope(method);
+
+[indication]
+class __ExtrinsicEvent
+{
+};
