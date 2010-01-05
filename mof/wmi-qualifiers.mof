@@ -1,17 +1,137 @@
-//
-// Windows specific qualifiers
-//
+// definitions for Microsoft WBEM
 
-Qualifier Dynamic : boolean = false, 
-    Scope(class, association, indication);
+#pragma locale ("en_US")
+
+#pragma include( "qualifiers.mof" )
+#pragma include ("qualifiers_optional.mof")
+
+/* --- Qualifiers */
+
+Qualifier Locale : uint32 = 0,
+    Scope(class, association, indication, reference);
+
+Qualifier UUID : string,
+    Scope(class, association, indication, reference);
+
+Qualifier CIM_key : boolean,
+    Scope(property, association, indication, reference);
+
+Qualifier SupportsDelete : boolean,
+    Scope(class);
+
+Qualifier DeleteBy : string,
+    Scope(class);
+
+Qualifier Fixed : boolean,
+    Scope(property);
+
+Qualifier Implemented : boolean,
+    Scope(method);
+
+Qualifier Constructor : boolean,
+    Scope(method);
+
+Qualifier Destructor : boolean,
+    Scope(method);
+
+Qualifier optional : boolean,
+    Scope(parameter);
+
+Qualifier Privileges : string[],
+    Scope(class,association,method,property);
+
+Qualifier Dynamic : boolean,
+    Scope(class,association,indication);
+
+Qualifier Singleton : boolean,
+    Scope(class,association);
+
+Qualifier SupportsCreate : boolean,
+    Scope(class,association);
+
+Qualifier SupportsUpdate : boolean,
+    Scope(class,association);
+
+Qualifier CreateBy : string,
+    Scope(class,association);
+
+Qualifier Value : string[],
+    Scope(property);
+
+Qualifier Amendment : boolean,
+    Scope(class,association);
 
 Qualifier PropertyContext : string = Null, 
     Scope(property);
 
-Qualifier Implemented : boolean = false, 
-    Scope(method);
+/* --- Classes */
+
+class __Namespace {
+  [Description( "Windows internal namespace" ), key]
+  string Name;
+};
+
+
+class __ExtendedStatus {
+};
 
 [indication]
-class __ExtrinsicEvent
-{
+class __ExtrinsicEvent {
 };
+
+/*
+ * put this into qualifiers.mof
+ *
+ *  Qualifier Read : boolean = true,
+ *    Scope(property,reference); // add reference
+ *
+ *  Qualifier Max : uint32 = null,
+ *    Scope(reference, property); // add property
+ *    
+ *
+ */
+
+class __Win32Provider {
+  [key]
+  string Name; // = "CIMWin32";
+
+  string ClsId; // = "{d63a5850-8f16-11cf-9f47-00aa00bf345c}";
+  uint16 ImpersonationLevel; // = 1;
+  string PerUserInitialization; // = "FALSE";
+  string HostingModel; // = "NetworkServiceHost";
+};
+
+
+/* --- Associations */
+
+[Association]
+class __InstanceProviderRegistration {
+  __Namespace Ref Namespace;
+  
+  [key]
+  __Win32Provider Ref Provider; // = $P;
+  string SupportsGet; // = "TRUE";
+  string SupportsPut; // = "TRUE";
+  string SupportsDelete; // = "TRUE";
+  string SupportsEnumeration; // = "TRUE";
+  string QuerySupportLevels[]; // = {"WQL:UnarySelect"};
+};
+
+[Association]
+class __MethodProviderRegistration {
+  __Namespace Ref Namespace;
+
+  [key]
+  __Win32Provider Ref Provider; // = $P;
+};
+
+[Association]
+class __EventProviderRegistration {
+  __Namespace Ref Namespace;
+
+  [key]
+  __Win32Provider Ref Provider; // = $P;
+  string EventQueryList;
+};
+
+// EOF
