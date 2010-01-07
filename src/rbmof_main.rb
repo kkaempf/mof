@@ -46,7 +46,7 @@ rescue InvalidMofSyntax => e
   STDERR.puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
   exit 1
 rescue
-  STDERR.puts "Error #{$!} ?!"
+  STDERR.puts "*** Error: #{$!} ?!"
   STDERR.puts $@
   exit 1
 end
