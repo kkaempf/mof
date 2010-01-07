@@ -33,17 +33,25 @@ rule
 
   mofSpecification
         : /* empty */
+	  { result = @schema }
 	| mofProduction
+	  { result = @schema }
 	| mofSpecification mofProduction
+	  { result = @schema }
         ;
 	
   mofProduction
         : compilerDirective
 	| classDeclaration
+	  { @schema.classes << val[0] }
 	| assocDeclaration
+	  { @schema.associations << val[0] }
 	| indicDeclaration
+	  { @schema.indications << val[0] }
 	| qualifierDeclaration
+	  { @schema.qualifiers << val[0] }
 	| instanceDeclaration
+	  { @schema.instances << val[0] }
         ;
 
 /***
@@ -120,6 +128,7 @@ rule
         | arrayInitializer
         ;
 
+  /* CIM::Meta::Flavors */
   flavor
 	: ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE
         ;
@@ -274,15 +283,18 @@ rule
 
   array_opt
 	: /* empty */
+	  { result = nil }
         | array
         ;
 
   array
 	: "[" positiveDecimalValue_opt "]"
+	  { result = val[1] }
         ;
 
   positiveDecimalValue_opt
 	: /* empty */
+	  { result = -1 }
 	| positiveDecimalValue
         ;
 
@@ -384,7 +396,9 @@ rule
  */
  
   qualifierDeclaration
+          /*      0             1             2     3                 4 */
 	: QUALIFIER qualifierName qualifierType scope defaultFlavor_opt ";"
+	  { result = CIM::Meta::Qualifier.new( val[1], val[2][0], nil, val[3], val[4], val[2][1]) }
         ;
 
   defaultFlavor_opt
@@ -399,9 +413,12 @@ rule
 	| SCHEMA
         ;
 
+        /* [ Type, val ] */
   qualifierType
 	: ":" dataType array_opt defaultValue_opt
-	  { result = val[1] }
+	  { type = val[2].nil? ? val[1] : CIM::Meta::Array.new(val[2],val[1])
+	    result = [ type, val[3] ]
+	  }
         ;
 
   scope
@@ -411,7 +428,9 @@ rule
 
   metaElements
 	: metaElement
+	  { result = CIM::Meta::Scope.new(val[0]) }
 	| metaElements "," metaElement
+	  { result = val[0] << CIM::Meta::Scope.new(val[2]) }
         ;
 
   metaElement
@@ -429,11 +448,14 @@ rule
 
   defaultFlavor
 	: "," FLAVOR "(" flavors ")"
+	  { result = val[3] }
         ;
 
   flavors
 	: flavor
+	  { result = val[0] }
 	| flavors "," flavor
+	  { result = val[0] << val[2] }
         ;
 
 /***
@@ -457,6 +479,8 @@ end
 
 require 'strscan'
 require File.dirname(__FILE__) + '/mofscanner'
+require File.dirname(__FILE__) + '/rbmof_io'
+require File.dirname(__FILE__) + '/../../rbcim/rbcim'
 require 'pathname'
 
 # to be used to flag @strict issues
@@ -467,123 +491,8 @@ end
 
 include Mofscanner
 
-def initialize debug, includes
-  @yydebug = debug
-  @includes = includes
-  @lineno = 1
-  @file = nil
-  @iconv = nil
-  @eol = "\n"
-  @fname = nil
-  @fstack = []
-  @in_comment = false
-  @strict = :cim22  # default to strict CIM v2.2 syntax
-end
-
-def lineno
-  @lineno
-end
-
-def name
-  @name
-end
-
-#
-# open file for parsing
-#
-# origin == :pragma for 'pragma include'
-#
-
-def open name, origin = nil
-  $stderr.puts "open #{name} [#{origin}]"
-  if name.kind_of? IO
-    file = name
-  else
-    p = Pathname.new name
-    file = nil
-    @includes.each do |incdir|
-      f = incdir + p
-#      $stderr.puts "Trying #{f}"
-      file = File.open( f ) if File.readable?( f )
-      break if file
-    end
-    if @name && name[0,1] != "/" # not absolute
-      dir = File.dirname(@name)           # try same dir as last file
-      f = dir + "/" + p
-      file = File.open(f) if File.readable?( f )
-    end
-    
-    unless file
-      return if origin == :pragma
-      raise "Cannot open #{name}"
-    end
-  end
-  @fstack << [ @file, @name, @lineno, @iconv, $/ ] if @file  
-  @file = file
-  @name = name
-  @lineno = 1
-  # read the byte order mark to check for utf-16 windows files
-  bom = @file.read(2)
-  if bom == "\376\377"
-    @iconv = "UTF-16BE"
-    $/ = "\0\r\0\n"
-  elsif bom == "\377\376"
-    @iconv = "UTF-16LE"
-    $/ = "\r\0\n\0"
-  else
-    @file.rewind
-    @iconv = nil
-    $/ = "\n"
-  end
-  @strict = :windows if @iconv
-#  $stderr.puts "$/(#{$/.split('').inspect})"
-
-end
+include Rbmof_IO
 
 ---- footer ----
 
-help = false
-debug = false
-includes = [Pathname.new "."]
-moffiles = []
-
-while ARGV.size > 0
-  case opt = ARGV.shift
-    when "-h":
-      $stderr.puts "Ruby MOF compiler"
-      $stderr.puts "rbmof [-h] [-d] [-I <dir>] [<moffiles>]"
-      $stderr.puts "Compiles <moffile>"
-      $stderr.puts "\t-h  this help"
-      $stderr.puts "\t-d  debug"
-      $stderr.puts "\t-I <dir>  include dir"
-      $stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
-      exit 0
-    when "-d": debug = true
-    when "-I": includes << Pathname.new(ARGV.shift)
-    when /^-.+/:
-      $stderr.puts "Undefined option #{opt}"
-    else
-      moffiles << opt
-  end
-end
-
-parser = Mofparser.new debug, includes
-
-puts "Mofparser starting"
-
-moffiles << $stdin if moffiles.empty?
-
-begin
-  val = parser.parse( moffiles )
-  puts "Accept!"
-rescue ParseError
-  STDERR.puts "#{parser.name}:#{parser.lineno}: #{$!}"
-  exit 1
-rescue InvalidMofSyntax => e
-  STDERR.puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
-  exit 1
-rescue
-  STDERR.puts "unexpected error #{$!} ?!"
-  STDERR.puts $@
-  exit 1
-end
+require File.dirname(__FILE__) + '/rbmof_main'
