@@ -103,15 +103,15 @@ rule
 	: "[" qualifier qualifiers "]"
         ;
 
-  qualifier
-	: qualifierName qualifierParameter_opt flavor_opt
-        ;
-
   qualifiers
 	: /* empty */
         | qualifiers "," qualifier
         ;
 	
+  qualifier
+	: qualifierName qualifierParameter_opt flavor_opt
+        ;
+
   flavor_opt
 	: /* empty */
 	| ":" flavor
@@ -182,8 +182,8 @@ rule
         ;
 
   className
-	: IDENTIFIER /* must be <schema>_<classname> */
-	  { raise ParseError, "Class name must be prefixed by '<schema>_'" unless val[0].include?("_") }
+	: IDENTIFIER /* must be <schema>_<classname> in CIM v2.x */
+	  { raise ParseError, "Class name must be prefixed by '<schema>_'" unless val[0].include?("_") || @strict == :windows }
         ;
 
   alias
@@ -212,7 +212,7 @@ rule
   propertyDeclaration
 	: qualifierList_opt dataType propertyName array_opt defaultValue_opt ";"
         ;
-
+	
   referenceDeclaration
 	: qualifierList_opt objectRef referenceName defaultValue_opt ";"
         ;
@@ -464,7 +464,12 @@ rule
  */
  
   instanceDeclaration
-	: qualifierList_opt INSTANCE OF className alias_opt "{" valueInitializer "}" ";"
+	: qualifierList_opt INSTANCE OF className alias_opt "{" valueInitializers "}" ";"
+        ;
+
+  valueInitializers
+        : valueInitializer
+        | valueInitializers valueInitializer
         ;
 
   valueInitializer
@@ -484,8 +489,11 @@ require File.dirname(__FILE__) + '/../../rbcim/rbcim'
 require 'pathname'
 
 # to be used to flag @strict issues
-class InvalidMofSyntax < Exception
+class InvalidMofSyntax < SyntaxError
 end
+
+#class ParseError < SyntaxError
+#end
 
 ---- inner ----
 
