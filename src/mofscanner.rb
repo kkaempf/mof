@@ -68,7 +68,7 @@ module Mofscanner
       when m = scanner.scan(%r{//.*})
 	next        # c++ style comment
 	
-      when m = scanner.scan(%r{[(){}\[\],;#:=]})
+      when m = scanner.scan(%r{[(){}\[\],;\$#:=]})
 	@q.push [m, m]
 
       when m = scanner.scan(%r{[123456789]\d*})
@@ -187,7 +187,7 @@ module Mofscanner
   
   def on_error(*args)
     $stderr.puts "Err #{@name}@#{@lineno}: args=#{args.inspect}"
-    raise ParseError(args)
+    raise SyntaxError(args)
   end
 
 end # module
