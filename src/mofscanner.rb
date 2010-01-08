@@ -141,7 +141,7 @@ module Mofscanner
 	when "indication": @q.push [:INDICATION, m]
 	when "instance": @q.push [:INSTANCE, m.to_sym]
 	when "method": @q.push [:METHOD, m]
-	when "null": @q.push [:nullValue, nil]
+	when "null": @q.push [:nullValue, CIM::Meta::Variant.new(:null,nil)]
 	when "of": @q.push [:OF, nil]
 	when "parameter": @q.push [:PARAMETER, m]
 	when "pragma": @q.push [:PRAGMA, nil]
