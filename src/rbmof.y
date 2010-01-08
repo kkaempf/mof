@@ -316,11 +316,14 @@ rule
 
   arrayInitializer
 	: "{" constantValue constantValues "}"
+	  { result = val[2].unshift val[1] }
         ;
 
   constantValues
 	: /* empty */
+	  { result = [] }
 	| constantValues "," constantValue
+	  { result = val[0] << val[2] }
         ;
 
   constantValue
@@ -413,7 +416,7 @@ rule
 	| SCHEMA
         ;
 
-        /* [ Type, val ] */
+        /* [type, Variant] */
   qualifierType
 	: ":" dataType array_opt defaultValue_opt
 	  { type = val[2].nil? ? val[1] : CIM::Meta::Array.new(val[2],val[1])
