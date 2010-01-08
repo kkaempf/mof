@@ -33,25 +33,25 @@ rule
 
   mofSpecification
         : /* empty */
-	  { result = @schema }
+	  { result = @result }
 	| mofProduction
-	  { result = @schema }
+	  { result = @result }
 	| mofSpecification mofProduction
-	  { result = @schema }
+	  { result = @result }
         ;
 	
   mofProduction
         : compilerDirective
 	| classDeclaration
-	  { @schema.classes << val[0] }
+	  { @result.classes << val[0] }
 	| assocDeclaration
-	  { @schema.associations << val[0] }
+	  { @result.associations << val[0] }
 	| indicDeclaration
-	  { @schema.indications << val[0] }
+	  { @result.indications << val[0] }
 	| qualifierDeclaration
-	  { @schema.qualifiers << val[0] }
+	  { @result.qualifiers << val[0] }
 	| instanceDeclaration
-	  { @schema.instances << val[0] }
+	  { @result.instances << val[0] }
         ;
 
 /***
@@ -92,6 +92,7 @@ rule
  
   classDeclaration
 	: qualifierList_opt CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
+	  { result = CIM::Meta::Class.new(val[2],val[0],val[3],val[4],val[6]) }
         ;
 
   qualifierList_opt
@@ -101,15 +102,25 @@ rule
 
   qualifierList
 	: "[" qualifier qualifiers "]"
+	  { result = val[2].unshift val[1] }
         ;
 
   qualifiers
 	: /* empty */
+	  { result = CIM::Schema::Qualifiers.new }
         | qualifiers "," qualifier
+	  { result = val[0] << val[2] }
         ;
 	
   qualifier
 	: qualifierName qualifierParameter_opt flavor_opt
+	  { # Get qualifier decl
+	    qualifier = @result.qualifier val[0]
+	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
+	    value = val[1]
+	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches? value
+	    result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
+	  }
         ;
 
   flavor_opt
@@ -145,7 +156,9 @@ rule
 
   classFeatures
 	: /* empty */
+	  { result = [] }
 	| classFeatures classFeature
+	  { result = val[0] << val[1] }
         ;
 
 /***
@@ -154,7 +167,11 @@ rule
  */
  
   assocDeclaration
+        /*  0           1          2   3     4         5         6              7   8                   9 */
 	: "[" ASSOCIATION qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
+	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
+	    result = CIM::Meta::Association.new(val[5],qualifiers,val[6],val[7],val[9])
+	  }
         ;
 
   associationFeatures
@@ -178,7 +195,11 @@ rule
  */
  
   indicDeclaration
+        /*  0          1          2   3     4         5         6              7   8             9 */
 	: "[" INDICATION qualifiers "]" CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
+	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
+	    result = CIM::Meta::Indication.new(val[5],qualifiers,val[6],val[7],val[9])
+	  }
         ;
 
   className
@@ -188,10 +209,12 @@ rule
 
   alias
 	: AS aliasIdentifier
+	  { result = val[1] }
         ;
 
   aliasIdentifier
 	: "$" IDENTIFIER /* NO whitespace ! */
+	  { result = val[1] }
         ;
 
   superClass
@@ -283,7 +306,6 @@ rule
 
   array_opt
 	: /* empty */
-	  { result = nil }
         | array
         ;
 
@@ -305,7 +327,7 @@ rule
 	
   defaultValue
 	: "=" initializer
-	  { result = val[1]}
+	  { result = val[1] }
         ;
 
   initializer
@@ -401,7 +423,15 @@ rule
   qualifierDeclaration
           /*      0             1             2     3                 4 */
 	: QUALIFIER qualifierName qualifierType scope defaultFlavor_opt ";"
-	  { result = CIM::Meta::Qualifier.new( val[1], val[2][0], nil, val[3], val[4], val[2][1]) }
+	  { qname = val[1]
+	    if qname.is_a?(CIM::Meta::Qualifier)
+	      raise "Wrong default type for #{qname}" unless qname.type.matches?(val[2][0])
+	      raise "Wrong default value for #{qname}" unless qname.type.matches?(val[2][1])
+	      result = qname
+	    else
+	      result = CIM::Meta::Qualifier.new( val[1], val[2][0], nil, val[3], val[4], val[2][1])
+	    end
+	  }
         ;
 
   defaultFlavor_opt
@@ -489,14 +519,19 @@ require 'strscan'
 require File.dirname(__FILE__) + '/mofscanner'
 require File.dirname(__FILE__) + '/rbmof_io'
 require File.dirname(__FILE__) + '/../../rbcim/rbcim'
+require File.dirname(__FILE__) + '/result'
+
 require 'pathname'
 
+module CIM
+module Schema
+
 # to be used to flag @strict issues
-class InvalidMofSyntax < SyntaxError
+class InvalidMofSyntax < ::SyntaxError
 end
 
-#class ParseError < SyntaxError
-#end
+class ParseError < ::SyntaxError
+end
 
 ---- inner ----
 
@@ -507,3 +542,7 @@ include Rbmof_IO
 ---- footer ----
 
 require File.dirname(__FILE__) + '/rbmof_main'
+
+end # Schema
+end # CIM
+

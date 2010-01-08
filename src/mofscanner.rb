@@ -118,7 +118,7 @@ module Mofscanner
 	case m.downcase
 	when "any": @q.push [:ANY, m]
 	when "as": @q.push [:AS, nil]
-	when "association": @q.push [:ASSOCIATION, m]
+	when "association": @q.push [:ASSOCIATION, CIM::Meta::Qualifier.new(m.downcase)]
 	when "class": @q.push( [:CLASS, m] )
 	when "disableoverride": @q.push [:DISABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
 	when "boolean": @q.push [:DT_BOOL, CIM::Meta::Type.new(:bool)]
@@ -138,7 +138,7 @@ module Mofscanner
 	when "enableoverride": @q.push [:ENABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
 	when "false": @q.push [:booleanValue, false]
 	when "flavor": @q.push [:FLAVOR, nil]
-	when "indication": @q.push [:INDICATION, m]
+	when "indication": @q.push [:INDICATION, CIM::Meta::Qualifier.new(m.downcase)]
 	when "instance": @q.push [:INSTANCE, m.to_sym]
 	when "method": @q.push [:METHOD, m]
 	when "null": @q.push [:nullValue, CIM::Meta::Variant.new(:null,nil)]

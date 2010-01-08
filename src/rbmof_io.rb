@@ -1,5 +1,3 @@
-require File.dirname(__FILE__) + '/cim_schema'
-
 module Rbmof_IO
 
 def initialize debug, includes
@@ -11,7 +9,7 @@ def initialize debug, includes
   @eol = "\n"
   @fname = nil
   @fstack = []
-  @schema = CIM::Schema.new  
+  @result = CIM::Schema::Result.new  
   @in_comment = false
   @strict = :cim22  # default to strict CIM v2.2 syntax
 end

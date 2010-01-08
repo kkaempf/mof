@@ -27,22 +27,22 @@ while ARGV.size > 0
   end
 end
 
-parser = Mofparser.new debug, includes
+parser = CIM::Schema::Mofparser.new debug, includes
 
 puts "Mofparser starting"
 
 moffiles << $stdin if moffiles.empty?
 
 begin
-  cim_schema = parser.parse( moffiles )
+  result = parser.parse( moffiles )
   unless quiet
     puts "Accept!"
-    puts cim_schema
+    puts result
   end
-rescue ParseError
+rescue CIM::Schema::ParseError
   STDERR.puts "#{parser.name}:#{parser.lineno}: #{$!}"
   exit 1
-rescue InvalidMofSyntax => e
+rescue CIM::Schema::InvalidMofSyntax => e
   STDERR.puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
   exit 1
 rescue
