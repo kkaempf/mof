@@ -11,7 +11,7 @@ class Mofparser
   preclow
 
   token PRAGMA IDENTIFIER CLASS ASSOCIATION INDICATION
-        ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS  
+        ENABLEOVERRIDE DISABLEOVERRIDE REstyleED TOSUBCLASS  
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
 	AS REF ANY OF
@@ -75,14 +75,14 @@ rule
 
   pragmaParameter
         : /* empty */
-	  { raise InvalidMofSyntax, "#pragma parameter missing" unless @strict == :windows }
+	  { raise InvalidMofSyntax.new("#pragma parameter missing") unless @style == :wmi }
 	| "(" pragmaParameterValue ")"
 	  { result = val[1] }
 	;
   pragmaParameterValue
         : string
 	| integerValue
-	  { raise InvalidMofSyntax, "#pragma parameter missing" unless @strict == :windows }
+	  { raise InvalidMofSyntax.new("#pragma parameter missing") unless @style == :wmi }
 	;
 
 /***
@@ -102,7 +102,7 @@ rule
 
   qualifierList
 	: "[" qualifier qualifiers "]"
-	  { result = val[2]
+	  { result = (val[2]||[])
 	    result.unshift val[1] if val[1]
 	  }
         ;
@@ -134,8 +134,16 @@ rule
 
   flavor_opt
 	: /* empty */
-	| ":" flavor
+	| ":" qflavors
+	  { result = val[1] }
         ;
+
+  qflavors
+        : flavor
+	  { result = [ val[0] ] }
+	| qflavors flavor
+	  { result = val[0] << val[1] }
+	;
 
   qualifierParameter_opt
 	: /* empty */
@@ -150,7 +158,7 @@ rule
 
   /* CIM::Meta::Flavors */
   flavor
-	: ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE
+	: ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE | TOINSTANCE
         ;
 
   alias_opt
@@ -177,7 +185,7 @@ rule
   assocDeclaration
         /*  0           1          2   3     4         5         6              7   8                   9 */
 	: "[" ASSOCIATION qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
-	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
+	  { qualifiers = (val[2]||[]).unshift(CIM::Schema::Qualifier.new(val[1]))
 	    result = CIM::Schema::Association.new(val[5],qualifiers,val[6],val[7],val[9])
 	  }
         ;
@@ -206,14 +214,14 @@ rule
   indicDeclaration
         /*  0          1          2   3     4         5         6              7   8             9 */
 	: "[" INDICATION qualifiers "]" CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
-	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
+	  { qualifiers = (val[2]||[]).unshift(CIM::Schema::Qualifier.new(val[1]))
 	    result = CIM::Schema::Indication.new(val[5],qualifiers,val[6],val[7],val[9])
 	  }
         ;
 
   className
 	: IDENTIFIER /* must be <schema>_<classname> in CIM v2.x */
-	  { raise ParseError, "Class name must be prefixed by '<schema>_'" unless val[0].include?("_") || @strict == :windows }
+	  { raise ParseError.new("Class name must be prefixed by '<schema>_'") unless val[0].include?("_") || @style == :wmi }
         ;
 
   alias
@@ -303,7 +311,7 @@ rule
 	
   parameterList
 	: parameter parameters
-	  { result = val[1].unshift val[0] }
+	  { result = (val[1]||[]).unshift val[0] }
         ;
 
   parameters
@@ -366,7 +374,7 @@ rule
 
   arrayInitializer
 	: "{" constantValue constantValues "}"
-	  { result = val[2].unshift val[1] }
+	  { result = (val[2]||[]).unshift val[1] }
         ;
 
   constantValues
@@ -553,7 +561,7 @@ require 'pathname'
 module CIM
 module Schema
 
-# to be used to flag @strict issues
+# to be used to flag @style issues
 class InvalidMofSyntax < ::SyntaxError
 end
 

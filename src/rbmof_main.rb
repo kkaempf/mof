@@ -2,6 +2,7 @@
 help = false
 debug = false
 quiet = false
+style = :cim
 includes = [Pathname.new "."]
 moffiles = []
 
@@ -11,12 +12,14 @@ while ARGV.size > 0
       $stderr.puts "Ruby MOF compiler"
       $stderr.puts "rbmof [-h] [-d] [-I <dir>] [<moffiles>]"
       $stderr.puts "Compiles <moffile>"
+      $stderr.puts "\t-s <style>  syntax style (wmi,cim)"
       $stderr.puts "\t-h  this help"
       $stderr.puts "\t-d  debug"
       $stderr.puts "\t-q  quiet"
       $stderr.puts "\t-I <dir>  include dir"
       $stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
       exit 0
+    when "-s": style = ARGV.shift.to_sym
     when "-d": debug = true
     when "-q": quiet = true
     when "-I": includes << Pathname.new(ARGV.shift)
@@ -34,7 +37,7 @@ puts "Mofparser starting"
 moffiles << $stdin if moffiles.empty?
 
 begin
-  result = parser.parse( moffiles )
+  result = parser.parse( moffiles, style, quiet )
   unless quiet
     puts "Accept!"
     puts result

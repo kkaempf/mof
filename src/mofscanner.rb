@@ -27,8 +27,8 @@ module Mofscanner
 #      $stderr.puts "eof ! #{@fstack.size}"
       @file.close unless @file == $stdin
       unless @fstack.empty?
-	@file, @name, @lineno, @iconv, $/ = @fstack.shift
-#	$stderr.puts "fill! #{@fstack.size}, #{@file}@#{@lineno}"
+	@file, @name, @lineno, @iconv, $/ = @fstack.pop
+#	$stderr.puts "fill! #{@fstack.size}, #{@name}@#{@lineno}"
         return fill_queue
       end
       @q.push [false, false]
@@ -41,7 +41,7 @@ module Mofscanner
 #    $stderr.puts "fill_queue(#{str.split('').inspect})"
     str.chomp!  # remove $/
     str = Iconv.conv( "ISO-8859-1", @iconv, str ) if @iconv
-    $stderr.puts "scan(#{str})"
+    $stderr.puts "scan(#{str})" unless @quiet
     scanner = StringScanner.new(str)
 
     until scanner.empty?
@@ -152,6 +152,7 @@ module Mofscanner
 	when "restricted": @q.push [:RESTRICTED, CIM::Meta::Flavors.new(m)]
 	when "schema": @q.push [:SCHEMA, m]
 	when "scope": @q.push [:SCOPE, nil]
+	when "toinstance": @q.push [:TOINSTANCE, CIM::Meta::Flavors.new(m)]
 	when "tosubclass": @q.push [:TOSUBCLASS, CIM::Meta::Flavors.new(m)]
 	when "translatable": @q.push [:TRANSLATABLE, CIM::Meta::Flavors.new(m)]
 	when "true": @q.push [:booleanValue, true]
@@ -167,11 +168,14 @@ module Mofscanner
     true
   end
 
-  def parse( files )
+  def parse( files, style, quiet )
+    @style = style
+    @quiet = quiet
     # open files in reverse order
     #  open() will stack them and parse starts in right order
     files.reverse_each do |file|
       open file, :argv
+#      puts "Opened #{file} as #{@file} @ #{@fstack.size}"
     end
     @q = []
     do_parse
@@ -186,8 +190,8 @@ module Mofscanner
   end
   
   def on_error(*args)
-    $stderr.puts "Err #{@name}@#{@lineno}: args=#{args.inspect}"
-    raise SyntaxError(args)
+    $stderr.puts "*** Err #{@name}:#{@lineno}:<#{args.size}>\n#{args[1].inspect}"
+    raise SyntaxError.new
   end
 
 end # module

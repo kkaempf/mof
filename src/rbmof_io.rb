@@ -11,7 +11,7 @@ def initialize debug, includes
   @fstack = []
   @result = CIM::Schema::Result.new  
   @in_comment = false
-  @strict = :cim22  # default to strict CIM v2.2 syntax
+  @style = :cim  # default to style CIM v2.2 syntax
 end
 
 def lineno
@@ -69,7 +69,7 @@ def open name, origin = nil
     @iconv = nil
     $/ = "\n"
   end
-  @strict = :windows if @iconv
+  @style = :wmi if @iconv
 #  $stderr.puts "$/(#{$/.split('').inspect})"
 
 end

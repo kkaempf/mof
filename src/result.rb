@@ -12,8 +12,9 @@ module CIM
       end
       
       def qualifier name
+	name = name.to_s
 	@qualifiers.each do |q|
-	  return q if q.name.casecmp(name.to_s) == 0
+	  return q if q.name.casecmp(name) == 0
 	end
 	nil
       end
