@@ -156,9 +156,8 @@ rule
 
   classFeatures
 	: /* empty */
-	  { result = [] }
 	| classFeatures classFeature
-	  { result = val[0] << val[1] }
+	  { result = (val[0]||[]) << val[1] }
         ;
 
 /***
@@ -176,9 +175,8 @@ rule
 
   associationFeatures
 	: /* empty */
-	  { result = [] }
 	| associationFeatures associationFeature
-	  { result = val[0] << val[1] }
+	  { result = (val[0]||[]) << val[1] }
         ;
 
   /* Context:
@@ -296,15 +294,24 @@ rule
 	
   parameterList
 	: parameter parameters
+	  { result = val[1].unshift val[0] }
         ;
 
   parameters
 	: /* empty */
 	| parameters "," parameter
+	  { result = (val[0]||[]) << val[2] }
         ;
 
   parameter
 	: qualifierList_opt typespec parameterName array_opt
+	  { if val[3]
+	      type = CIM::Meta::Array.new val[3], val[1]
+	    else
+	      type = val[1]
+	    end
+	    result = CIM::Schema::Property.new(type,val[2],val[0])
+	  }
         ;
 
   typespec
@@ -355,9 +362,8 @@ rule
 
   constantValues
 	: /* empty */
-	  { result = [] }
 	| constantValues "," constantValue
-	  { result = val[0] << val[2] }
+	  { result = (val[0]||[]) << val[2] }
         ;
 
   constantValue
