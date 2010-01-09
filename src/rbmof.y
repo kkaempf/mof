@@ -92,7 +92,7 @@ rule
  
   classDeclaration
 	: qualifierList_opt CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
-	  { result = CIM::Meta::Class.new(val[2],val[0],val[3],val[4],val[6]) }
+	  { result = CIM::Schema::Class.new(val[2],val[0],val[3],val[4],val[6]) }
         ;
 
   qualifierList_opt
@@ -170,13 +170,15 @@ rule
         /*  0           1          2   3     4         5         6              7   8                   9 */
 	: "[" ASSOCIATION qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
 	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
-	    result = CIM::Meta::Association.new(val[5],qualifiers,val[6],val[7],val[9])
+	    result = CIM::Schema::Association.new(val[5],qualifiers,val[6],val[7],val[9])
 	  }
         ;
 
   associationFeatures
 	: /* empty */
+	  { result = [] }
 	| associationFeatures associationFeature
+	  { result = val[0] << val[1] }
         ;
 
   /* Context:
@@ -198,7 +200,7 @@ rule
         /*  0          1          2   3     4         5         6              7   8             9 */
 	: "[" INDICATION qualifiers "]" CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
 	  { qualifiers = val[2].unshift(CIM::Schema::Qualifier.new(val[1]))
-	    result = CIM::Meta::Indication.new(val[5],qualifiers,val[6],val[7],val[9])
+	    result = CIM::Schema::Indication.new(val[5],qualifiers,val[6],val[7],val[9])
 	  }
         ;
 
@@ -234,14 +236,23 @@ rule
 
   propertyDeclaration
 	: qualifierList_opt dataType propertyName array_opt defaultValue_opt ";"
+	  { if val[3]
+	      type = CIM::Meta::Array.new val[3],val[1]
+	    else
+	      type = val[1]
+	    end
+	    result = CIM::Schema::Property.new(type,val[2],val[0],val[4])
+	  }
         ;
 	
   referenceDeclaration
 	: qualifierList_opt objectRef referenceName defaultValue_opt ";"
+	  { result = CIM::Schema::Property.new(val[1],val[2],val[0],val[4]) }
         ;
 
   methodDeclaration
 	: qualifierList_opt dataType methodName "(" parameterList_opt ")" ";"
+	  { result = CIM::Schema::Method.new(val[1],val[2],val[0],val[4]) }
         ;
 
   propertyName
@@ -275,6 +286,7 @@ rule
 
   objectRef
 	: className REF
+	  { result = CIM::Meta::Reference.new val[0] }
         ;
 
   parameterList_opt
@@ -429,7 +441,7 @@ rule
 	      raise "Wrong default value for #{qname}" unless qname.type.matches?(val[2][1])
 	      result = qname
 	    else
-	      result = CIM::Meta::Qualifier.new( val[1], val[2][0], nil, val[3], val[4], val[2][1])
+	      result = CIM::Meta::Qualifier.new( val[1], val[2][0], val[2][1], val[3], val[4])
 	    end
 	  }
         ;
