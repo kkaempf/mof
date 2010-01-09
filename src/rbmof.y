@@ -102,14 +102,18 @@ rule
 
   qualifierList
 	: "[" qualifier qualifiers "]"
-	  { result = val[2].unshift val[1] }
+	  { result = val[2]
+	    result.unshift val[1] if val[1]
+	  }
         ;
 
   qualifiers
 	: /* empty */
 	  { result = CIM::Schema::Qualifiers.new }
         | qualifiers "," qualifier
-	  { result = val[0] << val[2] }
+	  { result = val[0]
+	    result << val[2] if val[2]
+	  }
         ;
 	
   qualifier
@@ -119,7 +123,12 @@ rule
 	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
 	    value = val[1]
 	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches? value
-	    result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
+	    # Don't propagate a boolean 'false'
+	    if qualifier.type == :bool && value == false
+	      result = nil
+	    else
+	      result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
+	    end
 	  }
         ;
 
