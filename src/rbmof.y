@@ -122,7 +122,7 @@ rule
 	    qualifier = @result.qualifier val[0]
 	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
 	    value = val[1]
-	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches? value
+	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
 	    if qualifier.type == :bool && value == false
 	      result = nil
@@ -297,10 +297,17 @@ rule
 	| DT_STR
 	| DT_BOOL
 	| DT_DATETIME
+	| objectRef
         ;
 
   objectRef
-	: className REF
+	: className
+	  { # WMI uses class names as data types (without REF ?!)
+	    raise "Invalid data type" unless @style == :wmi
+	    result = CIM::Meta::Reference.new val[0]
+	  }
+
+	| className REF
 	  { result = CIM::Meta::Reference.new val[0] }
         ;
 
