@@ -34,15 +34,15 @@ module Mofscanner
       @q.push [false, false]
       return false
     end
-    str = @file.gets
-    return true unless str
+    @line = @file.gets
+    return true unless @line
     @lineno += 1
 
-#    $stderr.puts "fill_queue(#{str.split('').inspect})"
-    str.chomp!  # remove $/
-    str = Iconv.conv( "ISO-8859-1", @iconv, str ) if @iconv
-    $stderr.puts "scan(#{str})" unless @quiet
-    scanner = StringScanner.new(str)
+#    $stderr.puts "fill_queue(#{@line.split('').inspect})"
+    @line.chomp!  # remove $/
+    @line = Iconv.conv( "ISO-8859-1", @iconv, @line ) if @iconv
+    $stderr.puts "scan(#{@line})" unless @quiet
+    scanner = StringScanner.new(@line)
 
     until scanner.empty?
 #      $stderr.puts "#{@q.size}:\"#{scanner.rest}\""
@@ -110,7 +110,7 @@ module Mofscanner
 	@q.push [:stringValue, scanner[1]]
 
       # string with embedded backslash
-      when m = scanner.scan(%r{\"(.*\\.*)\"})
+      when m = scanner.scan(%r{\"([^\"]*\\[^\"]*)\"})
 #	$stderr.puts ":string(#{scanner[1]})"
 	@q.push [:stringValue, scanner[1]]
 
@@ -185,12 +185,30 @@ module Mofscanner
     while @q.empty?
       break unless fill_queue 
     end
-#    $stderr.puts "next_token #{@q.first.inspect}"
+    $stderr.puts "next_token #{@q.first.inspect}"
     @q.shift
   end
   
-  def on_error(*args)
-    $stderr.puts "*** Err #{@name}:#{@lineno}:<#{args.size}>\n#{args[1].inspect}"
+  # stack_size, last_token, stack
+  # stack[0] == Result
+  def on_error token, token_value, stack
+    $stderr.puts "*** Err #{@name}:#{@lineno}:\n#{@line}\n\tnear token #{token_value.inspect}"
+    $stderr.puts "\tStack [#{stack.size}]:"
+    idx = stack.size-1
+    (1..8).each do |i|
+      s = stack[idx]
+      if s.is_a? String
+	s = s.inspect
+      else
+	s = s.to_s
+      end
+      if s.size > 80
+	$stderr.puts "[#{i}]\t#{s[0,80]}..."
+      else
+	$stderr.puts "[#{i}]\t#{s}"
+      end
+      idx -= 1
+    end
     raise SyntaxError.new
   end
 
