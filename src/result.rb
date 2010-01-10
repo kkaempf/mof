@@ -12,6 +12,7 @@ module CIM
       end
       
       def qualifier name
+	return name if name.is_a?(CIM::Meta::Qualifier)
 	name = name.to_s
 	@qualifiers.each do |q|
 	  return q if q.name.casecmp(name) == 0
