@@ -43,10 +43,10 @@ begin
     puts result
   end
 rescue CIM::Schema::ParseError
-  STDERR.puts "#{parser.name}:#{parser.lineno}: #{$!}"
+  STDERR.puts "*** ParseError: #{parser.name}:#{parser.lineno}: #{$!}"
   exit 1
 rescue CIM::Schema::InvalidMofSyntax => e
-  STDERR.puts "#{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
+  STDERR.puts "InvalidMofSyntax: #{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
   exit 1
 rescue
   STDERR.puts "*** Error: #{$!} ?!"
