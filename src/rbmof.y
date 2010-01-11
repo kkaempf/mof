@@ -92,8 +92,42 @@ rule
  
   classDeclaration
 	: qualifierList_opt CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
-	  { result = CIM::Schema::Class.new(val[2],val[0],val[3],val[4],val[6]) }
+	  { qualifiers = val[0]
+	    features = val[6]
+	    if qualifiers and qualifiers.include?(:association)
+	      # FIXME: 'association' must be first
+              # Context:
+	      #
+	      # The remaining qualifier list must not include
+	      # the ASSOCIATION qualifier again. If the
+	      # association has no super association, then at
+	      # least two references must be specified! The
+	      # ASSOCIATION qualifier may be omitted in
+	      # sub associations.
+	      result = CIM::Schema::Association.new(val[2],qualifiers,val[3],val[4],features)
+	    elsif qualifiers and qualifiers.include?(:indication)
+	      # FIXME: 'indication' must be first
+	      # FIXME: features must not include references
+	      result = CIM::Schema::Indication.new(val[2],qualifiers,val[3],val[4],features)
+	    else
+	      # FIXME: features must not include references
+	      result = CIM::Schema::Class.new(val[2],qualifiers,val[3],val[4],features)
+	    end
+	  }
         ;
+
+  classFeatures
+	: /* empty */
+	| classFeatures classFeature
+	  { result = (val[0]||[]) << val[1] }
+        ;
+
+  classFeature
+	: propertyDeclaration
+	| methodDeclaration
+	| referenceDeclaration /* must have association qualifier */
+        ;
+
 
   qualifierList_opt
 	: /* empty */
@@ -171,70 +205,6 @@ rule
 	| superClass
         ;
 
-  classFeatures
-	: /* empty */
-	| classFeatures classFeature
-	  { result = (val[0]||[]) << val[1] }
-        ;
-
-/***
- * assocDeclaration
- *
- */
- 
-  assocDeclaration
-        /*  0           1          2   3     4         5         6              7   8                   9 */
-	: "[" association qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
-	  { qualifiers = (val[2]||[]).unshift(val[1])
-	    result = CIM::Schema::Association.new(val[5],qualifiers,val[6],val[7],val[9])
-	  }
-        ;
-
-  association
-        : ASSOCIATION qualifierParameter_opt flavor_opt
-	  { # Get qualifier decl
-	    qualifier = @result.qualifier val[0]
-	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
-	    value = val[1]
-	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches?(value)||@style == :wmi
-	    # Don't propagate a boolean 'false'
-	    if qualifier.type == :bool && value == false
-	      result = nil
-	    else
-	      result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
-	    end
-	  }
-	;
-	
-  associationFeatures
-	: /* empty */
-	| associationFeatures associationFeature
-	  { result = (val[0]||[]) << val[1] }
-        ;
-
-  /* Context:
-   *
-   * The remaining qualifier list must not include
-   * the ASSOCIATION qualifier again. If the
-   * association has no super association, then at
-   * least two references must be specified! The
-   * ASSOCIATION qualifier may be omitted in
-   * sub associations.
-   */
-
-/***
- * indicDeclaration
- *
- */
- 
-  indicDeclaration
-        /*  0          1          2   3     4         5         6              7   8             9 */
-	: "[" INDICATION qualifiers "]" CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
-	  { qualifiers = (val[2]||[]).unshift(CIM::Schema::Qualifier.new(val[1]))
-	    result = CIM::Schema::Indication.new(val[5],qualifiers,val[6],val[7],val[9])
-	  }
-        ;
-
   className
 	: IDENTIFIER /* must be <schema>_<classname> in CIM v2.x */
 	  { raise ParseError.new("Class name must be prefixed by '<schema>_'") unless val[0].include?("_") || @style == :wmi }
@@ -255,15 +225,6 @@ rule
 	  { result = val[1] }
         ;
 
-  classFeature
-	: propertyDeclaration
-	| methodDeclaration
-        ;
-
-  associationFeature
-	: classFeature
-	| referenceDeclaration
-        ;
 
   propertyDeclaration
 	: qualifierList_opt dataType propertyName array_opt defaultValue_opt ";"
