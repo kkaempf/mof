@@ -185,7 +185,7 @@ module Mofscanner
     while @q.empty?
       break unless fill_queue 
     end
-    $stderr.puts "next_token #{@q.first.inspect}"
+#    $stderr.puts "next_token #{@q.first.inspect}"
     @q.shift
   end
   
