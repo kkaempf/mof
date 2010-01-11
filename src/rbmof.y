@@ -297,7 +297,6 @@ rule
 	| DT_STR
 	| DT_BOOL
 	| DT_DATETIME
-	| objectRef
         ;
 
   objectRef
@@ -328,7 +327,7 @@ rule
         ;
 
   parameter
-	: qualifierList_opt typespec parameterName array_opt
+	: qualifierList_opt typespec parameterName array_opt parameterValue_opt
 	  { if val[3]
 	      type = CIM::Meta::Array.new val[3], val[1]
 	    else
@@ -351,6 +350,12 @@ rule
 	: /* empty */
         | array
         ;
+
+  parameterValue_opt
+        : /* empty */
+	| defaultValue
+	  { raise "Default parameter value not allowed in syntax style '{@style}'" unless @style == :wmi }
+	;
 
   array
 	: "[" positiveDecimalValue_opt "]"
