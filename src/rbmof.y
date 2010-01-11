@@ -11,7 +11,7 @@ class Mofparser
   preclow
 
   token PRAGMA IDENTIFIER CLASS ASSOCIATION INDICATION
-        ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS  
+        ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS TOINSTANCE
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
 	AS REF ANY OF
@@ -601,10 +601,10 @@ class ParserError < RbmofError
     ret = "*** Parse error #{@name}:#{@lineno}: #{@line}\n\tnear token #{@token_value.inspect}\n"
     ret << "\tStack [#{@stack.size}]:\n"
     idx = stack.size-1
-    (1..8).each do |i|
+    (1..12).each do |i|
       s = stack[idx]
-      if s.is_a? String
-	s = s.inspect
+      case s
+        when String, NilClass: s = s.inspect
       else
 	s = s.to_s
       end
@@ -615,6 +615,7 @@ class ParserError < RbmofError
       end
       ret << "\n"
       idx -= 1
+      break if idx < 0
     end
     ret
   end
