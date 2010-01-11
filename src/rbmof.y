@@ -11,7 +11,7 @@ class Mofparser
   preclow
 
   token PRAGMA IDENTIFIER CLASS ASSOCIATION INDICATION
-        ENABLEOVERRIDE DISABLEOVERRIDE REstyleED TOSUBCLASS  
+        ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS  
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
 	AS REF ANY OF
@@ -75,14 +75,14 @@ rule
 
   pragmaParameter
         : /* empty */
-	  { raise InvalidMofSyntax.new("#pragma parameter missing") unless @style == :wmi }
+	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
 	| "(" pragmaParameterValue ")"
 	  { result = val[1] }
 	;
   pragmaParameterValue
         : string
 	| integerValue
-	  { raise InvalidMofSyntax.new("#pragma parameter missing") unless @style == :wmi }
+	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
 	;
 
 /***
@@ -574,10 +574,53 @@ module CIM
 module Schema
 
 # to be used to flag @style issues
-class InvalidMofSyntax < ::SyntaxError
+class RbmofError < ::SyntaxError
+  attr_reader :name, :lineno, :line
+  def initialize name, lineno, line, msg
+    @name, @lineno,@line = name, lineno, line
+    super msg
+  end
+  def to_s
+    "#{@name}:#{@lineno}: #{line}\n#{super}"
+  end
 end
 
-class ParseError < ::SyntaxError
+class ScannerError < RbmofError
+  def initialize name, lineno, line, msg
+    super name,lineno,line,"Unrecognized '#{msg}'"
+  end
+end
+
+class ParserError < RbmofError
+  attr_reader :line, :token, :token_value, :stack
+  def initialize name, lineno, line, token, token_value, stack
+    @token,@token_value,@stack = token, token_value, stack
+    super name,lineno,line,""
+  end
+  def to_s
+    ret = "*** Parse error #{@name}:#{@lineno}: #{@line}\n\tnear token #{@token_value.inspect}\n"
+    ret << "\tStack [#{@stack.size}]:\n"
+    idx = stack.size-1
+    (1..8).each do |i|
+      s = stack[idx]
+      if s.is_a? String
+	s = s.inspect
+      else
+	s = s.to_s
+      end
+      if s.size > 80
+	ret << "[#{i}]\t#{s[0,80]}..."
+      else
+	ret << "[#{i}]\t#{s}"
+      end
+      ret << "\n"
+      idx -= 1
+    end
+    ret
+  end
+end
+
+class StyleError < ParserError
 end
 
 ---- inner ----
@@ -586,6 +629,9 @@ include Mofscanner
 
 include Rbmof_IO
 
+def style
+  @style
+end
 ---- footer ----
 
 require File.dirname(__FILE__) + '/rbmof_main'

@@ -42,14 +42,12 @@ begin
     puts "Accept!"
     puts result
   end
-rescue CIM::Schema::ParseError
-  STDERR.puts "*** ParseError: #{parser.name}:#{parser.lineno}: #{$!}"
+rescue CIM::Schema::StyleError => e
+  STDERR.puts "#{e.name}:#{e.line}: Syntax does not comply to '#{parser.style}' style"
   exit 1
-rescue CIM::Schema::InvalidMofSyntax => e
-  STDERR.puts "InvalidMofSyntax: #{parser.name}:#{parser.lineno}: Syntax does not comply to #{@strict}"
-  exit 1
-rescue
-  STDERR.puts "*** Error: #{$!} ?!"
-  STDERR.puts $@
+rescue CIM::Schema::ScannerError => e
+  STDERR.puts "*** ScannerError: #{$!}"
+rescue Exception => e
+  STDERR.puts "*** Error: #{$!}[#{$!.class}]"
   exit 1
 end
