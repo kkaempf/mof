@@ -189,10 +189,10 @@ module Mofscanner
     @q.shift
   end
   
-  # stack_size, last_token, stack
+  # stack_size, last_token, value_stack
   # stack[0] == Result
-  def on_error token, token_value, stack
-    raise CIM::Schema::ParserError.new @name,@lineno,@line,token,token_value,stack
+  def on_error token, token_value, value_stack
+    raise CIM::Schema::ParserError.new @name,@lineno,@line,token,token_value,value_stack
   end
 
 end # module
