@@ -110,7 +110,7 @@ module Mofscanner
 	@q.push [:stringValue, scanner[1]]
 
       # string with embedded backslash
-      when m = scanner.scan(%r{\"([^\"]*\\[^\"]*)\"})
+      when m = scanner.scan(%r{\"([^\\]|(\\.))*\"})
 #	$stderr.puts ":string(#{scanner[1]})"
 	@q.push [:stringValue, scanner[1]]
 
@@ -161,7 +161,7 @@ module Mofscanner
 	end # case m.downcase
       
       else
-	raise "**** Unrecognized(#{scanner.rest})" unless scanner.rest.empty?
+	raise CIM::Schema::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
       end # case
     end # until scanner.empty?
 #    $stderr.puts "scan done, @q #{@q.size} entries"
@@ -192,24 +192,7 @@ module Mofscanner
   # stack_size, last_token, stack
   # stack[0] == Result
   def on_error token, token_value, stack
-    $stderr.puts "*** Err #{@name}:#{@lineno}:\n#{@line}\n\tnear token #{token_value.inspect}"
-    $stderr.puts "\tStack [#{stack.size}]:"
-    idx = stack.size-1
-    (1..8).each do |i|
-      s = stack[idx]
-      if s.is_a? String
-	s = s.inspect
-      else
-	s = s.to_s
-      end
-      if s.size > 80
-	$stderr.puts "[#{i}]\t#{s[0,80]}..."
-      else
-	$stderr.puts "[#{i}]\t#{s}"
-      end
-      idx -= 1
-    end
-    raise SyntaxError.new
+    raise CIM::Schema::ParserError.new @name,@lineno,@line,token,token_value,stack
   end
 
 end # module
