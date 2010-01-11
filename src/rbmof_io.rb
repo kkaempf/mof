@@ -12,6 +12,7 @@ def initialize debug, includes
   @result = CIM::Schema::Result.new  
   @in_comment = false
   @style = :cim  # default to style CIM v2.2 syntax
+  @seen_files = []
 end
 
 def lineno
@@ -29,10 +30,12 @@ end
 #
 
 def open name, origin = nil
-  $stderr.puts "open #{name} [#{origin}]"
+  return if @seen_files.include? name
+  @seen_files << name
   if name.kind_of? IO
     file = name
   else
+    $stderr.puts "open #{name} [#{origin}]"
     p = Pathname.new name
     file = nil
     @includes.each do |incdir|
