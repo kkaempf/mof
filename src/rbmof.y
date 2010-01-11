@@ -184,12 +184,28 @@ rule
  
   assocDeclaration
         /*  0           1          2   3     4         5         6              7   8                   9 */
-	: "[" ASSOCIATION qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
-	  { qualifiers = (val[2]||[]).unshift(CIM::Schema::Qualifier.new(val[1]))
+	: "[" association qualifiers "]" CLASS className alias_opt superClass_opt "{" associationFeatures "}" ";"
+	  { qualifiers = (val[2]||[]).unshift(val[1])
 	    result = CIM::Schema::Association.new(val[5],qualifiers,val[6],val[7],val[9])
 	  }
         ;
 
+  association
+        : ASSOCIATION qualifierParameter_opt flavor_opt
+	  { # Get qualifier decl
+	    qualifier = @result.qualifier val[0]
+	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
+	    value = val[1]
+	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches?(value)||@style == :wmi
+	    # Don't propagate a boolean 'false'
+	    if qualifier.type == :bool && value == false
+	      result = nil
+	    else
+	      result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
+	    end
+	  }
+	;
+	
   associationFeatures
 	: /* empty */
 	| associationFeatures associationFeature
@@ -598,7 +614,7 @@ class ParserError < RbmofError
     super name,lineno,line,""
   end
   def to_s
-    ret = "*** Parse error #{@name}:#{@lineno}: #{@line}\n\tnear token #{@token_value.inspect}\n"
+    ret = "#{super}\tnear token #{@token_value.inspect}\n"
     ret << "\tStack [#{@stack.size}]:\n"
     idx = stack.size-1
     (1..12).each do |i|
