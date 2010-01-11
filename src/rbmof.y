@@ -60,7 +60,7 @@ rule
  */
  
   compilerDirective
-	: "#" PRAGMA pragmaName pragmaParameter
+	: "#" PRAGMA pragmaName pragmaParameters_opt
 	  { case val[2]
               when "include"
 		open val[3], :pragma
@@ -73,16 +73,23 @@ rule
 	: IDENTIFIER
         ;
 
-  pragmaParameter
+  pragmaParameters_opt
         : /* empty */
 	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
-	| "(" pragmaParameterValue ")"
+	| "(" pragmaParameterValues ")"
 	  { result = val[1] }
 	;
+
+  pragmaParameterValues
+        : pragmaParameterValue
+	| pragmaParameterValues "," pragmaParameterValue
+	;
+
   pragmaParameterValue
         : string
 	| integerValue
 	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
+	| IDENTIFIER
 	;
 
 /***
