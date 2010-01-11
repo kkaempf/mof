@@ -41,7 +41,7 @@ module Mofscanner
 #    $stderr.puts "fill_queue(#{@line.split('').inspect})"
     @line.chomp!  # remove $/
     @line = Iconv.conv( "ISO-8859-1", @iconv, @line ) if @iconv
-    $stderr.puts "scan(#{@line})" unless @quiet
+#    $stderr.puts "scan(#{@line})" unless @quiet
     scanner = StringScanner.new(@line)
 
     until scanner.empty?
@@ -106,11 +106,12 @@ module Mofscanner
       #      stringValue = 1*( """ *ucs2Character """ )
       #      ucs2Character = // any valid UCS-2-character
 
-      when m = scanner.scan(%r{\"([^\\\"]*)\"})
-	@q.push [:stringValue, scanner[1]]
+#      when m = scanner.scan(%r{\"([^\\\"]*)\"})
+#	@q.push [:stringValue, scanner[1]]
 
       # string with embedded backslash
-      when m = scanner.scan(%r{\"([^\\]|(\\.))*\"})
+      when m = scanner.scan(%r{\"(([^\\\"]|(\\[rn\"\\]))*)\"})
+#	$stderr.puts "scan(#{@line})" unless @quiet
 #	$stderr.puts ":string(#{scanner[1]})"
 	@q.push [:stringValue, scanner[1]]
 
