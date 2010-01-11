@@ -47,7 +47,10 @@ rescue CIM::Schema::StyleError => e
   exit 1
 rescue CIM::Schema::ScannerError => e
   STDERR.puts "*** ScannerError: #{$!}"
+rescue CIM::Schema::ParserError => e
+  STDERR.puts "*** ParserError: #{$!}"
 rescue Exception => e
   STDERR.puts "*** Error: #{$!}[#{$!.class}]"
+  STDERR.puts $@
   exit 1
 end
