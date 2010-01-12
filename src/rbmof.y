@@ -11,7 +11,7 @@ class Mofparser
   preclow
 
   token PRAGMA IDENTIFIER CLASS ASSOCIATION INDICATION
-        ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS TOINSTANCE
+        AMENDED ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS TOINSTANCE
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
 	AS REF ANY OF
@@ -75,7 +75,7 @@ rule
 
   pragmaParameters_opt
         : /* empty */
-	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
+	  { raise StyleError.new(@name,@lineno,@line,"#pragma parameter missing") unless @style == :wmi }
 	| "(" pragmaParameterValues ")"
 	  { result = val[1] }
 	;
@@ -88,7 +88,7 @@ rule
   pragmaParameterValue
         : string
 	| integerValue
-	  { raise StyleError.new(@name,@lineno,"#pragma parameter missing") unless @style == :wmi }
+	  { raise StyleError.new(@name,@lineno,@line,"#pragma parameter missing") unless @style == :wmi }
 	| IDENTIFIER
 	;
 
@@ -161,9 +161,9 @@ rule
 	: qualifierName qualifierParameter_opt flavor_opt
 	  { # Get qualifier decl
 	    qualifier = @result.qualifier val[0]
-	    raise "'#{val[0]}' is not a valid qualifier" unless qualifier
+	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
 	    value = val[1]
-	    raise "#{value.inspect} does not match qualifier type '#{qualifier.type}'" unless qualifier.type.matches?(value)||@style == :wmi
+	    raise RbmofError.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
 	    if qualifier.type == :bool && value == false
 	      result = nil
@@ -199,7 +199,12 @@ rule
 
   /* CIM::Meta::Flavors */
   flavor
-	: ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE | TOINSTANCE
+	: AMENDED | ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE | TOINSTANCE
+	  { case val[0].to_sym
+	      when :amended, :toinstance
+	        raise StyleError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid flavor") unless @style == :wmi
+	    end
+	  }
         ;
 
   alias_opt
@@ -559,13 +564,12 @@ module Schema
 
 # to be used to flag @style issues
 class RbmofError < ::SyntaxError
-  attr_reader :name, :lineno, :line
+  attr_reader :name, :lineno, :line, :msg
   def initialize name, lineno, line, msg
-    @name, @lineno,@line = name, lineno, line
-    super msg
+    @name,@lineno,@line,@msg = name, lineno, line, msg
   end
   def to_s
-    "#{@name}:#{@lineno}: #{line}\n#{super}"
+    "#{@name}:#{@lineno}: #{line}\n#{msg}"
   end
 end
 
@@ -605,7 +609,7 @@ class ParserError < RbmofError
   end
 end
 
-class StyleError < ParserError
+class StyleError < RbmofError
 end
 
 ---- inner ----
