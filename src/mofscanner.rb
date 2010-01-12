@@ -110,7 +110,7 @@ module Mofscanner
 #	@q.push [:stringValue, scanner[1]]
 
       # string with embedded backslash
-      when m = scanner.scan(%r{\"(([^\\\"]|(\\[rn\"\\]))*)\"})
+      when m = scanner.scan(%r{\"(([^\\\"]|(\\[nrt\"\\]))*)\"})
 #	$stderr.puts "scan(#{@line})" unless @quiet
 #	$stderr.puts ":string(#{scanner[1]})"
 	@q.push [:stringValue, scanner[1]]
