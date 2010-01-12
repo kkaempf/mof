@@ -45,10 +45,6 @@ rule
 	| classDeclaration
 	  { #puts "Class '#{val[0].name}'"
 	    @result.classes << val[0] }
-	| assocDeclaration
-	  { @result.associations << val[0] }
-	| indicDeclaration
-	  { @result.indications << val[0] }
 	| qualifierDeclaration
 	  { @result.qualifiers << val[0] }
 	| instanceDeclaration
@@ -544,6 +540,8 @@ rule
 
   valueInitializer
 	: qualifierList_opt keyname "=" initializer ";"
+	| qualifierList_opt keyname ";"
+	  { raise "Instance property '#{val[1]} must have a value" unless @style == :wmi }
         ;
 
 end
