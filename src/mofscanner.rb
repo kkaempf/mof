@@ -71,14 +71,6 @@ module Mofscanner
       when m = scanner.scan(%r{[(){}\[\],;\$#:=]})
 	@q.push [m, m]
 
-      when m = scanner.scan(%r{[123456789]\d*})
-	@q.push [:positiveDecimalValue, m.to_i]
-     
-      # decimalValue = [ "+" | "-" ] ( positiveDecimalDigit *decimalDigit | "0" )
-      # decimalDigit = "0" | positiveDecimalDigit
-      when m = scanner.scan(%r{(\+|-)?\d+})
-	@q.push [:decimalValue, m.to_i]
-
       # hexValue = [ "+" | "-" ] [ "0x" | "0X"] 1*hexDigit
       #      hexDigit = decimalDigit | "a" | "A" | "b" | "B" | "c" | "C" | "d" | "D" | "e" | "E" | "f" | "F"
       when m = scanner.scan(%r{(\+|-)?(0x|0X)([0123456789]|[abcdef]|[ABCDEF])+})
@@ -97,6 +89,14 @@ module Mofscanner
 
       when m = scanner.scan(%r{(\+|-)?\d*\.\d+})
 	@q.push [:realValue, m.to_f]
+
+      when m = scanner.scan(%r{[123456789]\d*})
+	@q.push [:positiveDecimalValue, m.to_i]
+     
+      # decimalValue = [ "+" | "-" ] ( positiveDecimalDigit *decimalDigit | "0" )
+      # decimalDigit = "0" | positiveDecimalDigit
+      when m = scanner.scan(%r{(\+|-)?\d+})
+	@q.push [:decimalValue, m.to_i]
 
       #      charValue = // any single-quoted Unicode-character, except single quotes
       
@@ -117,6 +117,7 @@ module Mofscanner
 
       when m = scanner.scan(%r{\w+})
 	case m.downcase
+	when "amended": @q.push [:AMENDED, CIM::Meta::Flavors.new(m)]
 	when "any": @q.push [:ANY, m]
 	when "as": @q.push [:AS, nil]
 	when "association": @q.push [:ASSOCIATION, CIM::Meta::Qualifier.new(m.downcase)]
