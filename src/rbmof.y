@@ -43,7 +43,8 @@ rule
   mofProduction
         : compilerDirective
 	| classDeclaration
-	  { @result.classes << val[0] }
+	  { #puts "Class '#{val[0].name}'"
+	    @result.classes << val[0] }
 	| assocDeclaration
 	  { @result.associations << val[0] }
 	| indicDeclaration
@@ -591,15 +592,16 @@ class ParserError < RbmofError
     idx = stack.size-1
     (1..12).each do |i|
       s = stack[idx]
+      c = s.class
       case s
         when String, NilClass: s = s.inspect
       else
 	s = s.to_s
       end
       if s.size > 80
-	ret << "[#{i}]\t#{s[0,80]}..."
+	ret << "[#{i}:#{c}]\t#{s[0,80]}..."
       else
-	ret << "[#{i}]\t#{s}"
+	ret << "[#{i}:#{c}]\t#{s}"
       end
       ret << "\n"
       idx -= 1
