@@ -39,9 +39,9 @@ moffiles << $stdin if moffiles.empty?
 begin
   result = parser.parse( moffiles, style, quiet )
   unless quiet
-    puts "Accept!"
     puts result
   end
+  puts "Accept!"
 rescue CIM::Schema::StyleError => e
   STDERR.puts "#{e.name}:#{e.line}: Syntax does not comply to '#{parser.style}' style"
   exit 1
