@@ -55,7 +55,16 @@ Qualifier SupportsUpdate : boolean,
 Qualifier CreateBy : string,
     Scope(class,association);
 
-Qualifier Value : string[],
+Qualifier Value : string,
+    Scope(property);
+
+Qualifier Values : string[],
+    Scope(property);
+
+Qualifier DefineValues : string[],
+    Scope(property);
+
+Qualifier ValueDescriptions : string[],
     Scope(property);
 
 Qualifier Amendment : boolean,
@@ -65,6 +74,34 @@ Qualifier PropertyContext : string = Null,
     Scope(property);
 
 Qualifier Overwrite : boolean,
+    Scope(property);
+
+Qualifier HasClassRefs : boolean,
+    Scope(class);
+
+Qualifier ClassRef : string[],
+    Scope(property);
+
+Qualifier DefaultValue : string,
+    Scope(property);
+
+Qualifier Guid : string,
+    Scope(class);
+
+Qualifier Not_Null : boolean,
+    Scope(property);
+
+Qualifier NotNull : boolean,
+    Scope(property);
+
+Qualifier Template : boolean,
+    Scope(property);
+
+Qualifier ClassContext : string,
+    Scope(class);
+
+/* Typo in whqlprov.mof */
+Qualifier Decription : string,
     Scope(property);
 
 /* --- Classes */
