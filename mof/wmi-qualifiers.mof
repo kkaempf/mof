@@ -64,6 +64,9 @@ Qualifier Amendment : boolean,
 Qualifier PropertyContext : string = Null, 
     Scope(property);
 
+Qualifier Overwrite : boolean,
+    Scope(property);
+
 /* --- Classes */
 
 class __Namespace {
