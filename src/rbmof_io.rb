@@ -35,7 +35,7 @@ def open name, origin = nil
   if name.kind_of? IO
     file = name
   else
-    $stderr.puts "open #{name} [#{origin}]"
+    $stderr.puts "open #{name} [#{origin}]" unless @quiet
     p = Pathname.new name
     file = nil
     @includes.each do |incdir|
