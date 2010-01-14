@@ -247,8 +247,11 @@ rule
         ;
 	
   referenceDeclaration
-	: qualifierList_opt objectRef referenceName defaultValue_opt ";"
-	  { result = CIM::Schema::Property.new(val[1],val[2],val[0],val[4]) }
+	: qualifierList_opt objectRef referenceName array_opt defaultValue_opt ";"
+	  { if val[4]
+	      raise StyleError.new(@name,@lineno,@line,"Array not allowed in reference declaration") unless @style == :wmi
+	    end
+	    result = CIM::Schema::Property.new(val[1],val[2],val[0],val[5]) }
         ;
 
   methodDeclaration
@@ -288,7 +291,7 @@ rule
   objectRef
 	: className
 	  { # WMI uses class names as data types (without REF ?!)
-	    raise "Invalid data type" unless @style == :wmi
+	    raise StyleError.new(@name,@lineno,@line,"Expected 'ref' keyword after classname '#{val[0]}'") unless @style == :wmi
 	    result = CIM::Meta::Reference.new val[0]
 	  }
 
