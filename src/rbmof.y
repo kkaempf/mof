@@ -371,14 +371,16 @@ rule
         ;
 
   arrayInitializer
-	: "{" constantValue constantValues "}"
-	  { result = (val[2]||[]).unshift val[1] }
+	: "{" constantValues "}"
+	  { result = val[2] }
         ;
 
   constantValues
 	: /* empty */
+	| constantValue
+	  { result = [ val[0] ] }
 	| constantValues "," constantValue
-	  { result = (val[0]||[]) << val[2] }
+	  { result = val[0] << val[2] }
         ;
 
   constantValue
@@ -388,6 +390,8 @@ rule
 	| string
 	| booleanValue
 	| nullValue
+	| instance
+	  { raise "Instance as property value not allowed in syntax style '{@style}'" unless @style == :wmi }
         ;
 
   integerValue
@@ -530,7 +534,11 @@ rule
  */
  
   instanceDeclaration
-	: qualifierList_opt INSTANCE OF className alias_opt "{" valueInitializers "}" ";"
+	: instance ";"
+        ;
+
+  instance
+	: qualifierList_opt INSTANCE OF className alias_opt "{" valueInitializers "}"
         ;
 
   valueInitializers
