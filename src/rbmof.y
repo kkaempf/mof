@@ -10,7 +10,7 @@ class Mofparser
     left '+' '-'
   preclow
 
-  token PRAGMA IDENTIFIER CLASS ASSOCIATION INDICATION
+  token PRAGMA INCLUDE IDENTIFIER CLASS ASSOCIATION INDICATION
         AMENDED ENABLEOVERRIDE DISABLEOVERRIDE RESTRICTED TOSUBCLASS TOINSTANCE
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
@@ -57,13 +57,16 @@ rule
  */
  
   compilerDirective
-	: "#" PRAGMA pragmaName pragmaParameters_opt
-	  { case val[2]
-              when "include"
-		open val[3], :pragma
-            end
-	    result = nil
-          }
+	: "#" PRAGMA INCLUDE pragmaParameters_opt
+	  { raise RbmofError.new(@name,@lineno,@line,"Missing filename after '#pragma include'") unless val[3]
+	    open val[3], :pragma
+	  }
+	| "#" PRAGMA pragmaName pragmaParameters_opt
+	| "#" INCLUDE pragmaParameters_opt
+	  { raise StyleError.new(@name,@lineno,@line,"Use '#pragma include' instead of '#include'") unless @style == :wmi
+	    raise RbmofError.new(@name,@lineno,@line,"Missing filename after '#include'") unless val[2]
+	    open val[2], :pragma
+	  }
         ;
 
   pragmaName
@@ -261,6 +264,10 @@ rule
 
   propertyName
 	: IDENTIFIER
+	| PROPERTY
+	  { # tmplprov.mof has 'string Property;'
+	    raise StyleError.new(@name,@lineno,@line,"Invalid keyword '#{val[0]}' used for property name") unless @style == :wmi
+	  }
         ;
 
   referenceName

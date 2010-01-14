@@ -140,6 +140,7 @@ module Mofscanner
 	when "enableoverride": @q.push [:ENABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
 	when "false": @q.push [:booleanValue, false]
 	when "flavor": @q.push [:FLAVOR, nil]
+	when "include": @q.push [:INCLUDE, nil]
 	when "indication": @q.push [:INDICATION, CIM::Meta::Qualifier.new(m.downcase)]
 	when "instance": @q.push [:INSTANCE, m.to_sym]
 	when "method": @q.push [:METHOD, m]
