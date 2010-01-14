@@ -61,6 +61,9 @@ Qualifier Value : string,
 Qualifier Values : string[],
     Scope(property);
 
+Qualifier Value_Map : string[],
+    Scope(property);
+
 Qualifier DefineValues : string[],
     Scope(property);
 
@@ -102,6 +105,39 @@ Qualifier ClassContext : string,
 
 /* Typo in whqlprov.mof */
 Qualifier Decription : string,
+    Scope(property);
+
+Qualifier ImplementationSource : string,
+    Scope(property);
+
+Qualifier Volatile : boolean,
+    Scope(property);
+
+Qualifier Range : string,
+    Scope(property);
+
+Qualifier EnumPrivileges : string,
+    Scope(property);
+
+Qualifier bypass_getobject : boolean,
+    Scope(method);
+
+Qualifier EventId : uint32,
+    Scope(class);
+
+Qualifier EventType : uint32,
+    Scope(class);
+
+Qualifier InsertionStringTemplates : string[],
+    Scope(class);
+
+Qualifier WritePrivileges : string[],
+    Scope(property);
+
+Qualifier DynProps : boolean,
+    Scope(class);
+
+Qualifier SubType : string,
     Scope(property);
 
 /* --- Classes */
