@@ -15,6 +15,7 @@ class Mofparser
 	TRANSLATABLE QUALIFIER SCOPE SCHEMA PROPERTY REFERENCE
 	METHOD PARAMETER FLAVOR INSTANCE
 	AS REF ANY OF
+	DT_VOID
 	DT_UINT8 DT_SINT8 DT_UINT16 DT_SINT16 DT_UINT32 DT_SINT32
 	DT_UINT64 DT_SINT64 DT_REAL32 DT_REAL64 DT_CHAR16 DT_STR
 	DT_BOOL DT_DATETIME
@@ -293,6 +294,8 @@ rule
 	| DT_STR
 	| DT_BOOL
 	| DT_DATETIME
+	| DT_VOID
+	  { raise StyleError.new(@name,@lineno,@line,"'void' is not a valid datatype") unless @style == :wmi }
         ;
 
   objectRef

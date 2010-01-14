@@ -123,6 +123,7 @@ module Mofscanner
 	when "association": @q.push [:ASSOCIATION, CIM::Meta::Qualifier.new(m.downcase)]
 	when "class": @q.push( [:CLASS, m] )
 	when "disableoverride": @q.push [:DISABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
+	when "void": @q.push [:DT_VOID, CIM::Meta::Type.new(:void)]
 	when "boolean": @q.push [:DT_BOOL, CIM::Meta::Type.new(:bool)]
 	when "char16": @q.push [:DT_CHAR16, CIM::Meta::Type.new(m)]
 	when "datetime": @q.push [:DT_DATETIME, CIM::Meta::Type.new(m)]
