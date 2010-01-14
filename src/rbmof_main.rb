@@ -32,7 +32,7 @@ end
 
 parser = CIM::Schema::Mofparser.new debug, includes
 
-puts "Mofparser starting"
+puts "Mofparser starting" unless quiet
 
 moffiles << $stdin if moffiles.empty?
 
@@ -47,10 +47,13 @@ rescue CIM::Schema::StyleError => e
   exit 1
 rescue CIM::Schema::ScannerError => e
   STDERR.puts "*** ScannerError: #{$!}"
+  exit 1
 rescue CIM::Schema::ParserError => e
   STDERR.puts "*** ParserError: #{$!}"
+  exit 1
 rescue CIM::Schema::RbmofError => e
   STDERR.puts "*** Error: #{$!}"
+  exit 1
 rescue Exception => e
   STDERR.puts "*** Exception: #{$!}[#{$!.class}]"
   STDERR.puts $@
