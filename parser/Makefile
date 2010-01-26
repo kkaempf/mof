@@ -1,17 +1,17 @@
 #
-# Makefile for rbmof
+# Makefile for mof parser
 #
-# mof compiler in Ruby
+# Parsing MOF files in Ruby
 #
 
-all: rbmof.rb Makefile
+all: mofparser.rb Makefile
 
-rbmof.rb: rbmof.y mofscanner.rb
+mofparser.rb: mofparser.y mofscanner.rb
 	racc -g -v -o $@ $<
 
 clean:
-	$(RM) rbmof.rb
-	$(RM) rbmof.output
+	$(RM) mofparser.rb
+	$(RM) mofparser.output
 
 distclean: clean
 	$(RM) *~

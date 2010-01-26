@@ -1,61 +1,22 @@
+#
+# moflint.rb
+#
+# MOF syntax checker
+#  and Mofparser tester
+#
+require 'pathname'
+require File.dirname(__FILE__) + "/../parser/mofparser"
 
-help = false
-debug = false
-quiet = false
-style = :cim
-includes = [Pathname.new "."]
-moffiles = []
+moffiles, options = Mofparser.argv_handler "moflint", ARGV
+options[:style] ||= :cim;
+options[:includes] ||= []
+options[:includes].unshift(Pathname.new ".")
 
-while ARGV.size > 0
-  case opt = ARGV.shift
-    when "-h":
-      $stderr.puts "Ruby MOF compiler"
-      $stderr.puts "rbmof [-h] [-d] [-I <dir>] [<moffiles>]"
-      $stderr.puts "Compiles <moffile>"
-      $stderr.puts "\t-s <style>  syntax style (wmi,cim)"
-      $stderr.puts "\t-h  this help"
-      $stderr.puts "\t-d  debug"
-      $stderr.puts "\t-q  quiet"
-      $stderr.puts "\t-I <dir>  include dir"
-      $stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
-      exit 0
-    when "-s": style = ARGV.shift.to_sym
-    when "-d": debug = true
-    when "-q": quiet = true
-    when "-I": includes << Pathname.new(ARGV.shift)
-    when /^-.+/:
-      $stderr.puts "Undefined option #{opt}"
-    else
-      moffiles << opt
-  end
-end
-
-parser = CIM::Schema::Mofparser.new debug, includes
-
-puts "Mofparser starting" unless quiet
-
-moffiles << $stdin if moffiles.empty?
+parser = Mofparser.new moffiles, options
 
 begin
-  result = parser.parse( moffiles, style, quiet )
-  unless quiet
-    puts result
-  end
-  puts "Accept!"
-rescue CIM::Schema::StyleError => e
-  STDERR.puts "#{e.name}:#{e.line}: Syntax does not comply to '#{parser.style}' style"
-  exit 1
-rescue CIM::Schema::ScannerError => e
-  STDERR.puts "*** ScannerError: #{$!}"
-  exit 1
-rescue CIM::Schema::ParserError => e
-  STDERR.puts "*** ParserError: #{$!}"
-  exit 1
-rescue CIM::Schema::RbmofError => e
-  STDERR.puts "*** Error: #{$!}"
-  exit 1
+  result = parser.parse
 rescue Exception => e
-  STDERR.puts "*** Exception: #{$!}[#{$!.class}]"
-  STDERR.puts $@
+  parser.error_handler e
   exit 1
 end
