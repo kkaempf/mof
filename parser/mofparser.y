@@ -581,19 +581,19 @@ require File.dirname(__FILE__) + '/parse_helper'
 
 #
 # Initialize Mofparser
-#  Mofparser.new files, options = {}
-#
-#  file -> Single string, pathname, IO
-#          or array of files
+#  Mofparser.new options = {}
 #
 #  options -> Hash of options
 #    :debug -> bool
 #    :includes -> array of include dirs
 #    :style -> :cim or :wmi
 #
-def initialize files, options = {}
+def initialize options = {}
   @yydebug = options[:debug]
   @includes = options[:includes] || []
+  @quiet = options[:quiet]
+  @style = options[:style] || :cim  # default to style CIM v2.2 syntax
+  
   @lineno = 1
   @file = nil
   @iconv = nil
@@ -602,7 +602,6 @@ def initialize files, options = {}
   @fstack = []
   @result = MofResult.new  
   @in_comment = false
-  @style = options[:style] || :cim  # default to style CIM v2.2 syntax
   @seen_files = []
 end
 
@@ -644,5 +643,6 @@ end
   end
 
 include ParseHelper
+include Mofscanner
 
 ---- footer ----

@@ -12,11 +12,13 @@ options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
 
-parser = Mofparser.new moffiles, options
+parser = Mofparser.new options
 
 begin
-  result = parser.parse
+  result = parser.parse moffiles
 rescue Exception => e
   parser.error_handler e
   exit 1
 end
+
+puts result

@@ -172,16 +172,14 @@ module Mofscanner
     true
   end
 
-  def parse( files, style, quiet )
-    @style = style
-    @quiet = quiet
+  def parse files
     # open files in reverse order
     #  open() will stack them and parse starts in right order
     files.reverse_each do |file|
       open file, :argv
 #      puts "Opened #{file} as #{@file} @ #{@fstack.size}"
     end
-    @q = []
+    @q = [] # init the token queue
     do_parse
   end
 
