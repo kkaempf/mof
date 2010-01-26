@@ -173,6 +173,8 @@ module Mofscanner
   end
 
   def parse files
+    return unless files
+    return if files.empty?
     # open files in reverse order
     #  open() will stack them and parse starts in right order
     files.reverse_each do |file|
