@@ -1,9 +1,7 @@
 #
-# mofparser.rb
+# parse_helper.rb
 #
-# A mof parsing class
-#
-# Defines CIM::Schema::Mofparser
+# Helper functions for mofparser
 #
 #
 
