@@ -13,21 +13,23 @@ module CIM
     
     class Qualifier
       def self.array_to_html qualifiers, div
-	div = div.add_element "div", "style" => "background-color: yellow; margin : 4px"
+	container = div.add_element "div", "style" => "background-color: yellow; margin : 2px"
+	left = container.add_element "div", "style" => "float : left; width : 14em"
+	left.text = "Qualifiers"
+	right = container.add_element "div", "style" => "float : left"
 	# Qualifiers
 	qualifiers.each do |q|
-	  q.to_html div
+	  q.to_html left, right
 	end
       end
 
-      def to_html div
+      def to_html left, right
 	cols = 1
-	div = div.add_element "div", "style" => "clear : both"
-	data = div.add_element "div", "style" => "float: left; margin : 2px 4px 2px 2px"
-	data.text = @definition.name.capitalize
+	name = left.add_element "div", "style" => ""
+	name.text = @definition.name.capitalize
 	if @value
 	  cols += 1
-	  data = div.add_element "div", "style" => "float: left; margin : 2px; font : sans-serif"
+	  data = right.add_element "div", "style" => "font : sans-serif"
 	  case @value
 	  when String
 	    @value.split("\\n").each do |l|
@@ -40,7 +42,7 @@ module CIM
 	end
 	if @flavor
 	  cols += 1
-	  data = div.add_element "div"
+	  data = div.add_element "div", "style" => "float: left"
 	  data.text = @flavor.to_s
 	end
 	cols
