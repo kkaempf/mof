@@ -51,10 +51,11 @@ module ParseHelper
 	raise "Cannot open #{name}"
       end
     end
-    @fstack << [ @file, @name, @lineno, @iconv, $/ ] if @file  
+    @fstack << [ @file, @name, @lineno, @iconv, $/, @result ] if @file  
     @file = file
     @name = name
     @lineno = 1
+    @result = MofResult.new
     # read the byte order mark to check for utf-16 windows files
     bom = @file.read(2)
     if bom == "\376\377"

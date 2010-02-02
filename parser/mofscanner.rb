@@ -27,7 +27,7 @@ module Mofscanner
 #      $stderr.puts "eof ! #{@fstack.size}"
       @file.close unless @file == $stdin
       unless @fstack.empty?
-	@file, @name, @lineno, @iconv, $/ = @fstack.pop
+	@file, @name, @lineno, @iconv, $/, @result = @fstack.pop
 #	$stderr.puts "fill! #{@fstack.size}, #{@name}@#{@lineno}"
         return fill_queue
       end

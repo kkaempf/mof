@@ -9,14 +9,6 @@ class MofResult
     @instances = []
   end
   
-  def qualifier name
-    return name if name.is_a?(CIM::Meta::Qualifier)
-    name = name.to_s
-    @qualifiers.each do |q|
-      return q if q.name.casecmp(name) == 0
-    end
-    nil
-  end
   def is_qualifier? name
     !qualifier(name).nil?
   end

@@ -21,4 +21,7 @@ rescue Exception => e
   exit 1
 end
 
-puts result
+result.each do |name,res|
+  puts "/*=============== #{name} ===================*/\n"
+  puts res
+end

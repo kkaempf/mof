@@ -32,22 +32,28 @@ class Mofparser
 	
 rule
 
+  /* Returns a Hash of filename and MofResult */
   mofSpecification
         : /* empty */
-	  { result = @result }
+	  { result = Hash.new }
 	| mofProduction
-	  { result = @result }
+	  { result = { @name => @result } }
 	| mofSpecification mofProduction
-	  { result = @result }
+	  { result = val[0]
+	    result[@name] = @result
+	  }
         ;
 	
   mofProduction
         : compilerDirective
 	| classDeclaration
 	  { #puts "Class '#{val[0].name}'"
-	    @result.classes << val[0] }
+	    @result.classes << val[0]
+	  }
 	| qualifierDeclaration
-	  { @result.qualifiers << val[0] }
+	  { @result.qualifiers << val[0]
+	    @qualifiers[val[0].name.downcase] = val[0]
+	  }
 	| instanceDeclaration
 	  { @result.instances << val[0] }
         ;
@@ -161,7 +167,13 @@ rule
   qualifier
 	: qualifierName qualifierParameter_opt flavor_opt
 	  { # Get qualifier decl
-	    qualifier = @result.qualifier val[0]
+	    qualifier = case val[0]
+	      when CIM::Schema::Qualifier: val[0].definition
+	      when CIM::Meta::Qualifier: val[0]
+	      when String: @qualifiers[val[0].downcase]
+	      else
+	        nil
+	      end
 	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
 	    value = val[1]
 	    raise RbmofError.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
@@ -600,9 +612,9 @@ def initialize options = {}
   @eol = "\n"
   @fname = nil
   @fstack = []
-  @result = MofResult.new  
   @in_comment = false
   @seen_files = []
+  @qualifiers = {}
 end
 
 #
