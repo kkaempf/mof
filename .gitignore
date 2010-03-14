@@ -1,3 +1,4 @@
 *~
 *.output
 parser/mofparser.rb
+html
