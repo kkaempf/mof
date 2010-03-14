@@ -625,18 +625,19 @@ end
 
   def self.argv_handler name, argv
     files = []
-    options = {}
+    options = { :namespace => "" }
     while argv.size > 0
       case opt = argv.shift
       when "-h":
 	$stderr.puts "Ruby MOF compiler"
 	$stderr.puts "#{name} [-h] [-d] [-I <dir>] [<moffiles>]"
 	$stderr.puts "Compiles <moffile>"
-	$stderr.puts "\t-s <style>  syntax style (wmi,cim)"
-	$stderr.puts "\t-h  this help"
 	$stderr.puts "\t-d  debug"
-	$stderr.puts "\t-q  quiet"
+	$stderr.puts "\t-h  this help"
 	$stderr.puts "\t-I <dir>  include dir"
+	$stderr.puts "\t-n <namespace>"
+	$stderr.puts "\t-s <style>  syntax style (wmi,cim)"
+	$stderr.puts "\t-q  quiet"
 	$stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
 	exit 0
       when "-s": options[:style] = argv.shift.to_sym
@@ -644,7 +645,13 @@ end
       when "-q": options[:quiet] = true
       when "-I"
 	options[:includes] ||= []
-	options[:includes] << Pathname.new(argv.shift)
+	dirname = argv.shift
+	unless File.directory?(dirname)
+	  files << dirname
+	  dirname = File.dirname(dirname)
+	end
+	options[:includes] << Pathname.new(dirname)
+      when "-n": options[:namespace] = argv.shift
       when /^-.+/:
 	$stderr.puts "Undefined option #{opt}"
       else

@@ -48,6 +48,8 @@ module ParseHelper
       
       unless file
 	return if origin == :pragma
+	$stderr.puts "#{name} not found, searched in"
+	@includes.each { |incdir| $stderr.puts "  #{incdir}" }
 	raise "Cannot open #{name}"
       end
     end
