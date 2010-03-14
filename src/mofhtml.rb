@@ -6,6 +6,7 @@
 
 require "rexml/document"
 require 'pathname'
+require 'fileutils'
 require File.dirname(__FILE__) + "/../parser/mofparser"
 
 module CIM
@@ -109,9 +110,11 @@ module CIM
   end
 end
 
-def class2html c, dir
-  dir = "#{dir}/class"
-  Dir.mkdir(dir) unless File.directory?(dir)
+#
+# return XHTML tree for class 'c'
+#
+
+def class2html c
   name = c.name
   doc = REXML::Document.new
   html = doc.add_element "html", "xmlns"=>"http://www.w3.org/1999/xhtml", "xml:lang"=>"en", "lang"=>"en"
@@ -122,8 +125,10 @@ def class2html c, dir
   css = head.add_element "link", "rel"=>"stylesheet", "href"=>"class.css", "type"=>"text/css", "media"=>"screen,projection,print"
   body = html.add_element "body"
   c.to_html body
-  doc.write( File.new("#{dir}/#{name}.html", "w+"), 0 )
+  doc
 end
+
+#------------------------------------------------------------------
 
 moffiles, options = Mofparser.argv_handler "mofhtml", ARGV
 options[:style] ||= :cim;
@@ -141,10 +146,13 @@ end
 
 exit 0 unless result
 
-Dir.mkdir("html") unless File.directory?("html")
+basedir = File.join("html", options[:namespace])
 
 result.each do |name, res|
   res.classes.each do |c|
-    class2html c, "html"
+    xhtml = class2html c
+    dir = "#{basedir}/class"
+    FileUtils.mkdir_p(dir) unless File.directory?(dir)
+    xhtml.write( File.new("#{dir}/#{c.name}.html", "w+"), 0 )
   end
 end
