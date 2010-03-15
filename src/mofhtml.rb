@@ -16,10 +16,10 @@ module CIM
       def self.array_to_html qualifiers, div
 	return unless qualifiers
 	return if qualifiers.empty?
-	container = div.add_element "div", "class" => "qualifiers_container"
-	left = container.add_element "div", "class" => "qualifiers_container_left"
+	container = div.add_element "tr", "class" => "qualifiers_container"
+	left = container.add_element "td", "class" => "qualifiers_container_left"
 	left.text = "Qualifiers"
-	right = container.add_element "div", "class" => "qualifiers_container_right"
+	right = container.add_element "td", "class" => "qualifiers_container_right"
 	# Qualifiers
 	maxlen = 0
 	qualifiers.each do |q|
@@ -61,15 +61,14 @@ module CIM
     class Property
       def to_html div
 	Qualifier.array_to_html @qualifiers, div
-	d = div.add_element "div", "class" => "property"
-	row = d.add_element "div"
-	data = row.add_element "div", "class" => "property_data"
-	span = data.add_element "span", "class" => "property_type"
+	row = div.add_element "tr", "class" => "property"
+	data = row.add_element "td", "class" => "property_data"
+	span = data.add_element "td", "class" => "property_type"
 	span.text = @type.to_s
-	span = data.add_element "span", "class" => "property_name"
+	span = data.add_element "td", "class" => "property_name"
 	span.text = @name
 	if @default
-	  span = data.add_element "span", "class" => "property_default"
+	  span = data.add_element "td", "class" => "property_default"
 	  span.text = " = #{@default}"
 	end
       end
@@ -80,30 +79,30 @@ module CIM
 	h1 = body.add_element "h1"
 	h1.text = name
 	
-	div0 = body.add_element "div", "class" => "class_container"
+	table = body.add_element "table", "class" => "class_container", "border" => "1"
 	
-	qcols = Qualifier.array_to_html @qualifiers, div0
-	return
-	# Class name, alias, superclass
-	
-	divc = div0.add_element "div", "class" => "class_name"
-	divc.text = name
-	span = divc.add_element "span"
-	text = ""
-	text += " as #{@alias_name}" if @alias_name
+	tr = table.add_element "tr"
+	td = tr.add_element "td", "class" => "class_name"
+	td.text = name
+	if @alias_name
+	  td = tr.add_element "td", "class" => "class_alias"
+	  td.text = " as #{@alias_name}"
+	end
 	if @superclass
-	  text += ": " 
-	  href = divc.add_element "a", "href" => "#{@superclass}.html"
+	  td = tr.add_element "td", "class" => "parent_name"
+	  td.text = ": " 
+	  href = td.add_element "a", "href" => "#{@superclass}.html"
 	  href.text = @superclass
 	end
-	span.text = text
+	
+	qcols = Qualifier.array_to_html @qualifiers, table.add_element("table", "border" => "1")
+#	return
 	
 	# Class features
 	
 	first = true
 	@features.each do |f|
-	  divf = div0.add_element "div", "class" => "class_features"
-	  f.to_html divf
+	  f.to_html table.add_element "table", "border" => "1"
 	end if @features
       end
     end
@@ -122,7 +121,7 @@ def class2html c
   head.add_element "meta", "http-equiv"=>"Content-type", "content"=>"text/html; charset=utf-8"
   title = head.add_element "title"
   title.text = "Class #{name}"
-  css = head.add_element "link", "rel"=>"stylesheet", "href"=>"class.css", "type"=>"text/css", "media"=>"screen,projection,print"
+  css = head.add_element "link", "rel"=>"stylesheet", "href"=>"mofhtml.css", "type"=>"text/css", "media"=>"screen,projection,print"
   body = html.add_element "body"
   c.to_html body
   doc
