@@ -169,8 +169,8 @@ rule
 	  { # Get qualifier decl
 	    qualifier = case val[0]
 	      when CIM::Schema::Qualifier: val[0].definition
-	      when CIM::Meta::Qualifier: val[0]
-	      when String: @qualifiers[val[0].downcase]
+	      when CIM::Meta::Qualifier:   val[0]
+	      when String:                 @qualifiers[val[0].downcase]
 	      else
 	        nil
 	      end
