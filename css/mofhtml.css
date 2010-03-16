@@ -1,0 +1,40 @@
+/*
+ * mofhtml.css
+ *
+ * Style sheet for displaying MOF information in a browser
+ *
+ * Colors from http://colorschemedesigner.com/
+ *
+ */
+
+table {
+  border-spacing: 0px;
+  width: auto;
+}
+
+.class_header {
+  background-color: #70e500;
+}
+
+.class_name {
+  padding: 10px;
+}
+
+.parent_name {
+  padding: 10px;
+}
+
+.qualifiers_container_head {
+  background-color: #ff9f00;
+  padding: 10px;
+}
+
+.qualifier_left {
+  background-color: #ff9f00;
+  min-width: 10px;
+}
+
+
+.qualifier_line {
+  background-color: #ffca73;
+}
