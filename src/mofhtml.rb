@@ -10,51 +10,60 @@ require 'fileutils'
 require File.dirname(__FILE__) + "/../parser/mofparser"
 
 module CIM
+  module Meta
+    class Feature
+      def to_html tr
+	td = tr.add_element "td"
+	td.text = self.to_s
+      end
+    end
+  end
+  
   module Schema
+    
+    class Method
+      def to_html div
+	tr = div.add_element "tr", "class" => "feature_method"
+	td = tr.add_element "td"
+	td.text = @name
+	super tr
+	td = tr.add_element "td"
+	td.text = @parameters.to_s
+      end
+    end
     
     class Qualifier
       def self.array_to_html qualifiers, div
 	return unless qualifiers
 	return if qualifiers.empty?
 	container = div.add_element "tr", "class" => "qualifiers_container"
-	left = container.add_element "td", "class" => "qualifiers_container_left"
+	left = container.add_element "td", "class" => "qualifiers_container_head", "colspan" => "4"
 	left.text = "Qualifiers"
-	right = container.add_element "td", "class" => "qualifiers_container_right"
 	# Qualifiers
-	maxlen = 0
 	qualifiers.each do |q|
-	  s = q.definition.name.size
-	  maxlen = s if maxlen < s
-	end
-	qualifiers.each do |q|
-	  q.to_html right, maxlen
+	  q.to_html div
 	end
       end
 
-      def to_html div, width = 0
-	cols = 1
-	width = @definition.name.size if width == 0
-	name = div.add_element "div", "class" => "qualifier_name"
-	name.text = @definition.name.capitalize
+      def to_html div
+	tr = div.add_element "tr", "class" => "qualifier_line"
+	td = tr.add_element "td", "class" => "qualifier_left"
+	td = tr.add_element "td", "class" => "qualifier_name"
+	td.text = @definition.name.capitalize
+	td = tr.add_element "td", "class" => "qualifier_value"
 	if @value
-	  cols += 1
-	  data = div.add_element "div", "class" => "qualifier_value"
 	  case @value
 	  when String
 	    @value.split("\\n").each do |l|
-	      divc = data.add_element "div", "style" => "clear : both"
+	      divc = td.add_element "div", "style" => "clear : both"
 	      divc.text = l.gsub "\\\"", '"'
 	    end
 	  else
-	    data.text = @value
+	    td.text = @value
 	  end
 	end
-	if @flavor
-	  cols += 1
-	  data = div.add_element "div", "class" => "qualifier_flavor"
-	  data.text = @flavor.to_s
-	end
-	cols
+	td = tr.add_element "td", "class" => "qualifier_flavor"
+	td.text = @flavor.to_s if @flavor
       end
     end
     
@@ -79,9 +88,9 @@ module CIM
 	h1 = body.add_element "h1"
 	h1.text = name
 	
-	table = body.add_element "table", "class" => "class_container", "border" => "1"
+	table = body.add_element "table", "class" => "class_container"
 	
-	tr = table.add_element "tr"
+	tr = table.add_element "tr", "class" => "class_header"
 	td = tr.add_element "td", "class" => "class_name"
 	td.text = name
 	if @alias_name
@@ -95,7 +104,7 @@ module CIM
 	  href.text = @superclass
 	end
 	
-	qcols = Qualifier.array_to_html @qualifiers, table.add_element("table", "border" => "1")
+	qcols = Qualifier.array_to_html @qualifiers, table.add_element("table")
 #	return
 	
 	# Class features
