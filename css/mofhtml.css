@@ -7,9 +7,13 @@
  *
  */
 
+.outer_div {
+  width: auto;
+}
+
 table {
   border-spacing: 0px;
-  width: auto;
+  width: 500px;
 }
 
 .class_header {
@@ -24,17 +28,39 @@ table {
   padding: 10px;
 }
 
+.qualifiers_container {
+  display: inline;
+}
+
 .qualifiers_container_head {
   background-color: #ff9f00;
   padding: 10px;
 }
 
-.qualifier_left {
+.qualifiers_container_left {
   background-color: #ff9f00;
   min-width: 10px;
 }
 
-
 .qualifier_line {
   background-color: #ffca73;
+}
+
+.properties_container {
+  display: inline;
+}
+
+.properties_container_head {
+  background-color: #3e94d1;
+  padding: 10px;
+}
+
+.properties_container_left {
+  background-color: #3e94d1;
+  min-width: 10px;
+}
+
+.property_row {
+  background-color: #65a5d1;
+  padding: 10px;
 }

@@ -36,18 +36,20 @@ module CIM
       def self.array_to_html qualifiers, div
 	return unless qualifiers
 	return if qualifiers.empty?
-	container = div.add_element "tr", "class" => "qualifiers_container"
-	left = container.add_element "td", "class" => "qualifiers_container_head", "colspan" => "4"
-	left.text = "Qualifiers"
+	container = div.add_element "table", "class" => "qualifiers_container"
+	head = container.add_element("tr").add_element("td", "class" => "qualifiers_container_head", "colspan" => "2")
+	head.text = "Qualifiers"
+	body = container.add_element("tr", "class" => "qualifiers_container_body")
+	body.add_element("td", "class" => "qualifiers_container_left")
+	body_right = body.add_element("td").add_element("table", "class" => "qualifiers_container_right")
 	# Qualifiers
 	qualifiers.each do |q|
-	  q.to_html div
+	  q.to_html body_right
 	end
       end
 
       def to_html div
 	tr = div.add_element "tr", "class" => "qualifier_line"
-	td = tr.add_element "td", "class" => "qualifier_left"
 	td = tr.add_element "td", "class" => "qualifier_name"
 	td.text = @definition.name.capitalize
 	td = tr.add_element "td", "class" => "qualifier_value"
@@ -68,18 +70,30 @@ module CIM
     end
     
     class Property
-      def to_html div
-	Qualifier.array_to_html @qualifiers, div
-	row = div.add_element "tr", "class" => "property"
-	data = row.add_element "td", "class" => "property_data"
-	span = data.add_element "td", "class" => "property_type"
-	span.text = @type.to_s
-	span = data.add_element "td", "class" => "property_name"
-	span.text = @name
-	if @default
-	  span = data.add_element "td", "class" => "property_default"
-	  span.text = " = #{@default}"
+      def self.array_to_html properties, div
+	return unless properties
+	return if properties.empty?
+	container = div.add_element "table", "class" => "properties_container"
+	head = container.add_element("tr").add_element("td", "class" => "properties_container_head", "colspan" => "2")
+	head.text = "Properties"
+	body = container.add_element("tr", "class" => "properties_container_body")
+	body.add_element("td", "class" => "properties_container_left")
+	body_right = body.add_element("td").add_element("table", "class" => "properties_container_right")
+	# Properties
+	properties.each do |p|
+	  p.to_html body_right
 	end
+      end
+      def to_html div
+	row = div.add_element "tr", "class" => "property_row"
+	Qualifier.array_to_html @qualifiers, row.add_element("td", "class" => "property_qualifiers", "colspan" => "3")
+	row = div.add_element "tr", "class" => "property_row"
+	span = row.add_element "td", "class" => "property_type"
+	span.text = @type.to_s
+	span = row.add_element "td", "class" => "property_name"
+	span.text = @name
+	span = row.add_element "td", "class" => "property_default"
+	span.text = " = #{@default}" if @default
       end
     end
     
@@ -104,15 +118,13 @@ module CIM
 	  href.text = @superclass
 	end
 	
-	qcols = Qualifier.array_to_html @qualifiers, table.add_element("table")
-#	return
+	# Class qualifiers
 	
-	# Class features
+	Qualifier.array_to_html @qualifiers, table.add_element("tr", "class" => "qualifiers_row").add_element("td", "colspan" => "2")
 	
-	first = true
-	@features.each do |f|
-	  f.to_html table.add_element "table", "border" => "1"
-	end if @features
+	# Class properties (features)
+	
+	Property.array_to_html @features, table.add_element("tr", "class" => "properties_row").add_element("td", "colspan" => "2")
       end
     end
   end
@@ -132,7 +144,7 @@ def class2html c
   title.text = "Class #{name}"
   css = head.add_element "link", "rel"=>"stylesheet", "href"=>"mofhtml.css", "type"=>"text/css", "media"=>"screen,projection,print"
   body = html.add_element "body"
-  c.to_html body
+  c.to_html body.add_element("div", "class" => "outer_div")
   doc
 end
 
