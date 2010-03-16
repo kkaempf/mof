@@ -1,0 +1,7 @@
+// definitions for SBLIM
+
+Qualifier Provider : string,
+    Scope(class, association, indication, reference);
+
+
+// EOF
