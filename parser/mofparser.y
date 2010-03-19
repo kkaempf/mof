@@ -397,7 +397,7 @@ rule
 
   arrayInitializer
 	: "{" constantValues "}"
-	  { result = val[2] }
+	  { result = val[1] }
         ;
 
   constantValues
