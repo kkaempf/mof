@@ -165,7 +165,8 @@ module Mofscanner
 	end # case m.downcase
       
       else
-	raise CIM::Schema::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
+	require File.join(File.dirname(__FILE__), 'parse_helper')
+	raise ParseHelper::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
       end # case
     end # until scanner.empty?
 #    $stderr.puts "scan done, @q #{@q.size} entries"
@@ -196,7 +197,8 @@ module Mofscanner
   # stack_size, last_token, value_stack
   # stack[0] == Result
   def on_error token, token_value, value_stack
-    raise ParserError.new @name,@lineno,@line,token,token_value,value_stack
+    require File.join(File.dirname(__FILE__), 'parse_helper')
+    raise ParseHelper::ParserError.new @name,@lineno, @line, token,token_value,value_stack
   end
 
 end # module Mofscanner
