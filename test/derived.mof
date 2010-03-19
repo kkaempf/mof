@@ -1,0 +1,3 @@
+class MOF_Test : Parent_Class
+{
+};

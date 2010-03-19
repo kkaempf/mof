@@ -1,0 +1,8 @@
+qualifier Description : string,
+  Scope(property);
+  
+class MOF_Test : Parent_Class
+{
+  [ Description("This is a property with a Description qualifier") ]
+  string text;
+};

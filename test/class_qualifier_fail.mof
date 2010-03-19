@@ -1,0 +1,4 @@
+[ Description("This should fail with: 'Description' is not a valid qualifier") ]
+class MOF_Test : Parent_Class
+{
+};

@@ -1,0 +1,8 @@
+qualifier Array : string[],
+  Scope(property);
+  
+class MOF_Test : Parent_Class
+{
+  [ Array { "One", "Two", "Three" } ]
+  string text;
+};
