@@ -13,7 +13,11 @@
 
 table {
   border-spacing: 0px;
-  width: 500px;
+  width: 900px;
+}
+
+td {
+  vertical-align: left;
 }
 
 .class_header {
@@ -60,7 +64,8 @@ table {
   min-width: 10px;
 }
 
-.property_row {
+.feature_line {
   background-color: #65a5d1;
   padding: 10px;
+  vertical-align: left;
 }

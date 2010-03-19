@@ -12,9 +12,44 @@ require File.dirname(__FILE__) + "/../parser/mofparser"
 module CIM
   module Meta
     class Feature
-      def to_html tr
-	td = tr.add_element "td"
-	td.text = self.to_s
+      # parameters will be non-nil for a Method
+      def to_html div, parameters = nil
+	tr = div.add_element "tr", "class" => "feature_qualifiers_line"
+	Schema::Qualifier.array_to_html @qualifiers, tr.add_element("td", "class" => "feature_qualifiers", "colspan" => "4")
+	tr = div.add_element "tr", "class" => "feature_line"
+	td = tr.add_element "td", "class" => "feature_type"
+	case @type
+	when CIM::Meta::Array
+	  td.text = @type.type.to_s
+	else
+	  td.text = @type.to_s
+	end
+	td = tr.add_element "td", "class" => "feature_name"
+	td.text = @name
+	td.text << "[]" if @type.is_a? CIM::Meta::Array
+	td = tr.add_element "td", "class" => "feature_parameters"
+	first = true
+	if parameters
+	  t = "("
+	  parameters.each do |p|
+	    if first
+	      first = false
+	    else
+	      t << ", "
+	    end
+	    t << "[IN] " if p.qualifiers.include? :in
+	    t << "[OUT] " if p.qualifiers.include? :out
+	    t << "#{p.name}"
+	  end
+	  td.text = t + ")"
+	else
+	  td.text = ""
+        end
+	td = tr.add_element "td", "class" => "feature_default"
+	td.text = @default ? " = #{@default}" : "" 
+	if parameters
+	  Schema::Qualifier.array_to_html parameters, div.add_element("tr", "class" => "feature_parameters")
+	end
       end
     end
   end
@@ -23,12 +58,7 @@ module CIM
     
     class Method
       def to_html div
-	tr = div.add_element "tr", "class" => "feature_method"
-	td = tr.add_element "td"
-	td.text = @name
-	super tr
-	td = tr.add_element "td"
-	td.text = @parameters.to_s
+	super div, @parameters?@parameters:[]
       end
     end
     
@@ -55,6 +85,8 @@ module CIM
 	td = tr.add_element "td", "class" => "qualifier_value"
 	if @value
 	  case @value
+	  when Array
+	    td.text = "{ #{@value.join(', ')} }"
 	  when String
 	    @value.split("\\n").each do |l|
 	      divc = td.add_element "div", "style" => "clear : both"
@@ -65,7 +97,7 @@ module CIM
 	  end
 	end
 	td = tr.add_element "td", "class" => "qualifier_flavor"
-	td.text = @flavor.to_s if @flavor
+	td.text = @flavor ? @flavor.to_s : "" 
       end
     end
     
@@ -83,17 +115,6 @@ module CIM
 	properties.each do |p|
 	  p.to_html body_right
 	end
-      end
-      def to_html div
-	row = div.add_element "tr", "class" => "property_row"
-	Qualifier.array_to_html @qualifiers, row.add_element("td", "class" => "property_qualifiers", "colspan" => "3")
-	row = div.add_element "tr", "class" => "property_row"
-	span = row.add_element "td", "class" => "property_type"
-	span.text = @type.to_s
-	span = row.add_element "td", "class" => "property_name"
-	span.text = @name
-	span = row.add_element "td", "class" => "property_default"
-	span.text = " = #{@default}" if @default
       end
     end
     
@@ -154,6 +175,9 @@ moffiles, options = Mofparser.argv_handler "mofhtml", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
+options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
+
+moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
 
 parser = Mofparser.new options
 
