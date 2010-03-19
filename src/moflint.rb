@@ -11,6 +11,9 @@ moffiles, options = Mofparser.argv_handler "moflint", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
+options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
+
+moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
 
 parser = Mofparser.new options
 
