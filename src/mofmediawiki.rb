@@ -12,8 +12,8 @@ require File.dirname(__FILE__) + "/../parser/mofparser"
 module CIM
   module Meta
     class Feature
-      def to_mediawiki
-	[ self.to_s ]
+      def to_mediawiki indent=0
+	self.to_s
       end
     end
   end
@@ -21,8 +21,8 @@ module CIM
   module Schema
     
     class Method
-      def to_mediawiki
-	[ "#{@name}", super, "(", @parameters.to_s, ")" ]
+      def to_mediawiki indent=0
+	[ "| %s %s %s( %s )" % [ " ||"*indent, @name, super, @parameters.to_s ] ]
       end
     end
     
@@ -40,7 +40,7 @@ module CIM
       end
 
       def to_mediawiki indent=0
-	mediawiki = "| %s''%s'' || " % [" || "*indent, @definition.name.capitalize ]
+	mediawiki = "| %s''%s'' || " % [" ||"*indent, @definition.name.capitalize ]
 	case @value
 	when Array
 	  mediawiki << "{ #{@value.join(', ')} }"
@@ -109,13 +109,15 @@ end
 
 #------------------------------------------------------------------
 
+$stderr.puts "Call: #{ARGV.join(' ')}"
 moffiles, options = Mofparser.argv_handler "mofmediawiki", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
 
 schemaprefix = File.dirname(moffiles.last)
-wikiprefix = "SystemsManagement/CIM/Schema/" + schemaprefix
+wikiprefix = "SystemsManagement/CIM/Schema"
+wikiprefix << "/#{schemaprefix}" unless schemaprefix == "."
 
 parser = Mofparser.new options
 
@@ -132,7 +134,8 @@ basedir = File.join("mediawiki", options[:namespace])
 
 result.each do |name, res|
   res.classes.each do |c|
-    dir = "#{basedir}/#{schemaprefix}"
+    dir = "#{basedir}"
+    dir << "/#{schemaprefix}" unless schemaprefix == "."
     mediawiki = c.to_mediawiki wikiprefix
     FileUtils.mkdir_p(dir) unless File.directory?(dir)
     File.open("#{dir}/#{c.name}.mediawiki", "w+") do |f|
