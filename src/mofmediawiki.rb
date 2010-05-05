@@ -27,63 +27,57 @@ module CIM
     end
     
     class Qualifier
-      def self.array_to_mediawiki qualifiers
+      def self.array_to_mediawiki qualifiers, indent=0
 	return unless qualifiers
 	return if qualifiers.empty?
-	mediawiki = [ "{|", "!Qualifiers", "|-" ]
 	# Qualifiers
+	mediawiki = []
 	qualifiers.each do |q|
-	  mediawiki.concat q.to_mediawiki
+	  mediawiki.concat q.to_mediawiki(indent)
 	  mediawiki << "|-"
 	end
-	mediawiki << "|}"
+	mediawiki
       end
 
-      def to_mediawiki
-	mediawiki = [ @definition.name.capitalize ]
-	if @value
-	  mediawiki << "||"
-	  case @value
-	  when String
-	    @value.split("\\n").each do |l|
-	      mediawiki << l.gsub("\\\"", '"')
-	    end
-	  else
-	    mediawiki << @value
+      def to_mediawiki indent=0
+	mediawiki = "| %s''%s'' || " % [" || "*indent, @definition.name.capitalize ]
+	case @value
+	when Array
+	  mediawiki << "{ #{@value.join(', ')} }"
+	when String
+	  @value.split("\\n").each do |l|
+	    mediawiki << l.gsub("\\\"", '"')
+	    mediawiki << "\n"
 	  end
+	else
+	  mediawiki << @value.to_s
 	end
 	if @flavor
-	  mediawiki << "||"
-	  mediawiki << @flavor.to_s
+	  mediawiki << " || #{@flavor.to_s}"
 	end
-	mediawiki
+	[ mediawiki ]
       end
     end
     
     class Property
-      def self.array_to_mediawiki properties
+      def self.array_to_mediawiki properties, indent=0
 	return unless properties
 	return if properties.empty?
-	mediawiki = [ "{|", "!Properties", "|-" ]
+	mediawiki = []
 	# Properties
 	properties.each do |p|
-	  mediawiki.concat p.to_mediawiki
+	  mediawiki.concat p.to_mediawiki(indent)
 	  mediawiki << "|-"
 	end
-	mediawiki << "|}"
+	mediawiki
       end
 
-      def to_mediawiki
-	mediawiki = Qualifier.array_to_mediawiki @qualifiers
-	mediawiki.concat [ "{|", "!Properties", "|-" ]
-	mediawiki << @type.to_s
-        mediawiki << "||"
-	mediawiki << @name
+      def to_mediawiki indent=0
+	out = '! %scolspan="2"|%s %s' % [ " ||"*indent,  @type.to_s, @name ]
         if @default
-          mediawiki << "||"
-	  mediawiki << " = #{@default}"
+          out << " = #{@default}"
         end
-        mediawiki << "|}"
+	[out, "|-", Qualifier.array_to_mediawiki(@qualifiers, indent)]
       end
     end
     
@@ -91,16 +85,21 @@ module CIM
       def to_mediawiki dir
         mediawiki = [ "=Class #{name}=" ]
 
-        mediawiki << ("Class %s%s%s" % [ name, @alias_name ? "as #{@alias_name}" : "", @superclass ? ": [[#{dir}/#{@superclass}|#{@superclass}]]" : "" ])
+        mediawiki << ("%s%s%s" % [ name, @alias_name ? "as #{@alias_name}" : "", @superclass ? ": [[#{dir}/#{@superclass}|#{@superclass}]]" : "" ])
 	
 	# Class qualifiers
+	mediawiki.concat [ "{|", '!colspan="4"|Qualifiers', "|-" ]
 	
-	mediawiki.concat Qualifier.array_to_mediawiki(@qualifiers)
+	mediawiki.concat Qualifier.array_to_mediawiki(@qualifiers,1)
+	
+	mediawiki << "|}"
 	
 	# Class properties (features)
 	
-	mediawiki.concat Property.array_to_mediawiki(@features)
-
+	mediawiki.concat [ "{|", '!colspan="4"|Properties', "|-" ]
+	mediawiki.concat Property.array_to_mediawiki(@features,1)
+	mediawiki << "|}"
+	
 	mediawiki
       end
     end
@@ -115,7 +114,8 @@ options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
 
-wikiprefix = "SystemsManagement/CIM/classes"
+schemaprefix = File.dirname(moffiles.last)
+wikiprefix = "SystemsManagement/CIM/Schema/" + schemaprefix
 
 parser = Mofparser.new options
 
@@ -132,7 +132,7 @@ basedir = File.join("mediawiki", options[:namespace])
 
 result.each do |name, res|
   res.classes.each do |c|
-    dir = "#{basedir}/class"
+    dir = "#{basedir}/#{schemaprefix}"
     mediawiki = c.to_mediawiki wikiprefix
     FileUtils.mkdir_p(dir) unless File.directory?(dir)
     File.open("#{dir}/#{c.name}.mediawiki", "w+") do |f|
