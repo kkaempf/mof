@@ -36,7 +36,9 @@ puts "<table>"
 classes = []
 Dir.foreach( File.join(basedir, schema) ) do |f|
   next if f[0,1] == "."
-  classes << File.basename(f, ".mof")
+  res = %x{ "ruby" "mofhtml.rb" "-q" "-I" "/usr/share/mof/cim-current" "qualifiers.mof" "qualifiers_optional.mof" "#{schema}/#{f}" }
+  exit 1 unless $?.exitstatus == 0
+  classes.concat res.split("\n")
 end
 classes.sort!
 
