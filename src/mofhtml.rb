@@ -17,36 +17,35 @@ module CIM
 	tr = div.add_element "tr", "class" => "feature_qualifiers_line"
 	Schema::Qualifier.array_to_html @qualifiers, tr.add_element("td", "class" => "feature_qualifiers", "colspan" => "4")
 	tr = div.add_element "tr", "class" => "feature_line"
-	td = tr.add_element "td", "class" => "feature_type"
+	td = tr.add_element "td", "class" => (parameters ? "method" : "feature")
+	type_s = nil
 	case @type
 	when CIM::Meta::Array
-	  td.text = @type.type.to_s
+	  type_s = @type.type.to_s
 	else
-	  td.text = @type.to_s
+	  type_s = @type.to_s
 	end
-	td = tr.add_element "td", "class" => "feature_name"
-	td.text = @name
-	td.text << "[]" if @type.is_a? CIM::Meta::Array
-	td = tr.add_element "td", "class" => "feature_parameters"
+	name = @name
+	name << "[]" if @type.is_a? CIM::Meta::Array
+	
+	params = ""
 	first = true
 	if parameters
-	  t = "("
+	  params << "("
 	  parameters.each do |p|
 	    if first
 	      first = false
 	    else
-	      t << ", "
+	      params << ", "
 	    end
-	    t << "[IN] " if p.qualifiers.include? :in
-	    t << "[OUT] " if p.qualifiers.include? :out
-	    t << "#{p.name}"
+	    params << "[IN] " if p.qualifiers.include? :in
+	    params << "[OUT] " if p.qualifiers.include? :out
+	    params << "#{p.name}"
 	  end
-	  td.text = t + ")"
-	else
-	  td.text = ""
+	  params << ")"
         end
-	td = tr.add_element "td", "class" => "feature_default"
-	td.text = @default ? " = #{@default}" : "" 
+	td.text = "%s %s%s %s" % [ type_s, name, params, (@default?"= '#{@default}'":"") ]
+	
 	if parameters
 	  Schema::Qualifier.array_to_html parameters, div.add_element("tr", "class" => "feature_parameters")
 	end
@@ -128,19 +127,14 @@ module CIM
 	table = body.add_element "table", "class" => "class_container"
 	
 	tr = table.add_element "tr", "class" => "class_header"
-	td = tr.add_element "td", "class" => "class_name"
-	td.text = name
-	if @alias_name
-	  td = tr.add_element "td", "class" => "class_alias"
-	  td.text = " as #{@alias_name}"
-	end
+	td = tr.add_element "td"
+	span = td.add_element "span", "class" => "class_name"
+	span.text = "%s %s %s" % [ name, (@alias_name?" as #{@alias_name}":""), (@superclass?": ":"") ]
 	if @superclass
-	  td = tr.add_element "td", "class" => "parent_name"
-	  td.text = ": " 
 	  href = td.add_element "a", "href" => "#{@superclass}.html"
 	  href.text = @superclass
 	end
-	
+
 	# Class qualifiers
 	
 	Qualifier.array_to_html @qualifiers, table.add_element("tr", "class" => "qualifiers_row").add_element("td", "colspan" => "2")
@@ -160,12 +154,12 @@ end
 def class2html c
   name = c.name
   doc = REXML::Document.new
-  html = doc.add_element "html", "xmlns"=>"http://www.w3.org/1999/xhtml", "xml:lang"=>"en", "lang"=>"en"
+  html = doc.add_element "html", "xmlns" => "http://www.w3.org/1999/xhtml", "xml:lang" => "en", "lang" => "en"
   head = html.add_element "head"
-  head.add_element "meta", "http-equiv"=>"Content-type", "content"=>"text/html; charset=utf-8"
+  head.add_element "meta", "http-equiv" => "Content-type", "content" => "text/html; charset=utf-8"
   title = head.add_element "title"
   title.text = "Class #{name}"
-  css = head.add_element "link", "rel"=>"stylesheet", "href"=>"mofhtml.css", "type"=>"text/css", "media"=>"screen,projection,print"
+  css = head.add_element "link", "rel" => "stylesheet", "href" => "mofhtml.css", "type" => "text/css", "media" => "screen,projection,print"
   body = html.add_element "body"
   c.to_html body.add_element("div", "class" => "outer_div")
   doc
@@ -174,7 +168,7 @@ end
 #------------------------------------------------------------------
 
 moffiles, options = Mofparser.argv_handler "mofhtml", ARGV
-options[:style] ||= :cim;
+options[:style] ||= :cim
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
 options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
@@ -200,5 +194,6 @@ result.each do |name, res|
     dir = "#{basedir}/class"
     FileUtils.mkdir_p(dir) unless File.directory?(dir)
     xhtml.write( File.new("#{dir}/#{c.name}.html", "w+"), 0 )
+    puts c.name
   end
 end

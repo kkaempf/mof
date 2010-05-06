@@ -64,8 +64,13 @@ td {
   min-width: 10px;
 }
 
-.feature_line {
+.feature {
   background-color: #65a5d1;
+  padding: 10px;
+  vertical-align: left;
+}
+.method {
+  background-color: #5192c8;
   padding: 10px;
   vertical-align: left;
 }
