@@ -90,14 +90,16 @@ module CIM
 	  when String
 	    @value.split("\\n").each do |l|
 	      divc = td.add_element "div", "style" => "clear : both"
-	      divc.text = l.gsub "\\\"", '"'
+	      divc.text = l.gsub("\\\"", '"').gsub("\\'", "'")
 	    end
 	  else
 	    td.text = @value
 	  end
 	end
-	td = tr.add_element "td", "class" => "qualifier_flavor"
-	td.text = @flavor ? @flavor.to_s : "" 
+	if @flavor
+	  td = tr.add_element "td", "class" => "qualifier_flavor"
+	  td.text = @flavor.to_s
+	end
       end
     end
     
