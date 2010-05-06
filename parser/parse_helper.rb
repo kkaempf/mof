@@ -36,19 +36,22 @@ module ParseHelper
       file = nil
       @includes.each do |incdir|
 	f = incdir + p
-	#      $stderr.puts "Trying #{f}"
+#	      $stderr.puts "Trying '#{f}': #{File.exists?(f)}"
 	file = File.open( f ) if File.readable?( f )
 	break if file
+#	$stderr.puts "\tNope"
       end
-      if @name && name[0,1] != "/" # not absolute
-	dir = File.dirname(@name)           # try same dir as last file
-	f = dir + "/" + p
-	file = File.open(f) if File.readable?( f )
+      unless file
+	if @name && name[0,1] != "/" # not absolute
+	  dir = File.dirname(@name)           # try same dir as last file
+	  f = dir + "/" + p
+	  file = File.open(f) if File.readable?( f )
+	end
       end
       
       unless file
 	return if origin == :pragma
-	$stderr.puts "#{name} not found, searched in"
+	$stderr.puts "'#{name}' not found, searched in"
 	@includes.each { |incdir| $stderr.puts "  #{incdir}" }
 	raise "Cannot open #{name}"
       end
