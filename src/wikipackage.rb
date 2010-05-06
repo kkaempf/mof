@@ -39,6 +39,7 @@ content.each do |l|
   parent = File.dirname(l)
   file = File.basename(l)
   classes = %x{ "ruby" "mofmediawiki.rb" "-q" "-I" "/usr/share/mof/cim-current" "-I" "#{parent}" "qualifiers.mof" "qualifiers_optional.mof" "#{file}" }
+  exit 1 unless $?.exitstatus == 0
   puts "== #{File.basename(file, '.mof')} =="
   classes.each do |c|
     c.chomp!
