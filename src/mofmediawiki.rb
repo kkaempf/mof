@@ -28,8 +28,8 @@ module CIM
     
     class Qualifier
       def self.array_to_mediawiki qualifiers, indent=0
-	return unless qualifiers
-	return if qualifiers.empty?
+	return [] unless qualifiers
+	return [] if qualifiers.empty?
 	# Qualifiers
 	mediawiki = []
 	qualifiers.each do |q|
@@ -46,7 +46,7 @@ module CIM
 	  mediawiki << "{ #{@value.join(', ')} }"
 	when String
 	  @value.split("\\n").each do |l|
-	    mediawiki << l.gsub("\\\"", '"')
+	    mediawiki << l.gsub("\\\"", '"').gsub("\\'", "'")
 	    mediawiki << "\n"
 	  end
 	else
@@ -61,8 +61,8 @@ module CIM
     
     class Property
       def self.array_to_mediawiki properties, indent=0
-	return unless properties
-	return if properties.empty?
+	return [] unless properties
+	return [] if properties.empty?
 	mediawiki = []
 	# Properties
 	properties.each do |p|
@@ -87,19 +87,23 @@ module CIM
 
         mediawiki << ("%s%s%s" % [ name, @alias_name ? "as #{@alias_name}" : "", @superclass ? ": [[#{dir}/#{@superclass}|#{@superclass}]]" : "" ])
 	
-	# Class qualifiers
-	mediawiki.concat [ "{|", '!colspan="4"|Qualifiers', "|-" ]
-	
-	mediawiki.concat Qualifier.array_to_mediawiki(@qualifiers,1)
-	
-	mediawiki << "|}"
+	qualifiers = Qualifier.array_to_mediawiki(@qualifiers,1)
+	unless qualifiers.empty?
+	  # Class qualifiers
+	  mediawiki.concat [ "{|", '!colspan="4"|Qualifiers', "|-" ]
+	  mediawiki.concat qualifiers
+	  mediawiki << "|}"
+	end
 	
 	# Class properties (features)
 	
-	mediawiki.concat [ "{|", '!colspan="4"|Properties', "|-" ]
-	mediawiki.concat Property.array_to_mediawiki(@features,1)
-	mediawiki << "|}"
-	
+	properties = Property.array_to_mediawiki(@features,1)
+	unless properties.empty?
+	  mediawiki.concat [ "{|", '!colspan="4"|Properties', "|-" ]
+	  mediawiki.concat properties
+	  mediawiki << "|}"
+	end
+
 	mediawiki
       end
     end
@@ -109,7 +113,7 @@ end
 
 #------------------------------------------------------------------
 
-$stderr.puts "Call: #{ARGV.join(' ')}"
+#$stderr.puts "Call: #{ARGV.join(' ')}"
 moffiles, options = Mofparser.argv_handler "mofmediawiki", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
@@ -143,5 +147,6 @@ result.each do |name, res|
 	f.puts line
       end
     end
+    puts c.name
   end
 end
