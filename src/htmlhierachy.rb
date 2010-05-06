@@ -38,6 +38,7 @@ Dir.foreach( File.join(basedir, schema) ) do |f|
   next if f[0,1] == "."
   res = %x{ "ruby" "mofhtml.rb" "-q" "-I" "/usr/share/mof/cim-current" "qualifiers.mof" "qualifiers_optional.mof" "#{schema}/#{f}" }
   exit 1 unless $?.exitstatus == 0
+  $stderr.puts res
   classes.concat res.split("\n")
 end
 classes.sort!
@@ -48,7 +49,7 @@ classes.each do |classname|
   if i % COLUMNS == 0
     puts "<tr>"
   end
-  print "<td><a href=\"#{classname}.html\">#{classname}</a></td>"
+  print "<td><a href=\"class/#{classname}.html\">#{classname}</a></td>"
   i += 1
   if i < count
     if i % COLUMNS == 0
