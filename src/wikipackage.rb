@@ -13,7 +13,7 @@ package = nil
 if arg == "-b"
   basedir = ARGV.shift
 else
-  package = arg
+  package = arg.chomp
 end
 
 prefix = "SystemsManagement/CIM/Providers"
@@ -35,10 +35,13 @@ puts "= #{package} ="
 content.each do |l|
   next unless l =~ /.mof$/
   next if l =~ /deploy.mof/
-  dirs = l.split "/"
-  file = dirs.pop
-  parent = dirs.pop
-  %x{ "ruby" "mofmediawiki.rb" "-I" "/usr/share/mof/cim-current" "-I" "#{dirs.join('/')}" "qualifiers.mof" "qualifiers_optional.mof" "#{parent}/#{file}" }
+  l.chomp!
+  parent = File.dirname(l)
+  file = File.basename(l)
+  classes = %x{ "ruby" "mofmediawiki.rb" "-q" "-I" "/usr/share/mof/cim-current" "-I" "#{parent}" "qualifiers.mof" "qualifiers_optional.mof" "#{file}" }
+  puts "== #{File.basename(file, '.mof')} =="
+  classes.each do |c|
+    c.chomp!
+    puts "* [[#{prefix}/#{package}/#{c}|#{c}]]"
+  end
 end
-
-
