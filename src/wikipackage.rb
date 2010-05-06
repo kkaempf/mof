@@ -41,7 +41,7 @@ content.each do |l|
   classes = %x{ "ruby" "mofmediawiki.rb" "-q" "-I" "/usr/share/mof/cim-current" "-I" "#{parent}" "qualifiers.mof" "qualifiers_optional.mof" "#{file}" }
   exit 1 unless $?.exitstatus == 0
   puts "== #{File.basename(file, '.mof')} =="
-  classes.each do |c|
+  classes.sort.each do |c|
     c.chomp!
     puts "* [[#{prefix}/#{package}/#{c}|#{c}]]"
   end
