@@ -122,16 +122,23 @@ module CIM
     class Class
       def to_html body
 	h1 = body.add_element "h1"
-	h1.text = name
+	h1.text = @name
 	
 	table = body.add_element "table", "class" => "class_container"
 	
 	tr = table.add_element "tr", "class" => "class_header"
 	td = tr.add_element "td"
 	span = td.add_element "span", "class" => "class_name"
-	span.text = "%s %s %s" % [ name, (@alias_name?" as #{@alias_name}":""), (@superclass?": ":"") ]
+	span.text = "%s %s %s" % [ @name, (@alias_name?" as #{@alias_name}":""), (@superclass?": ":"") ]
 	if @superclass
-	  href = td.add_element "a", "href" => "#{@superclass}.html"
+	  this_prefix = @name.split("_").first
+	  super_prefix = @superclass.split("_").first
+	  href = "#{@superclass}.html"
+	  $stderr.puts "name #{@name}:#{this_prefix}, super #{@superclass}:#{super_prefix}"
+	  if this_prefix != super_prefix
+	    href = "../class/"+href
+	  end
+	  href = td.add_element "a", "href" => href
 	  href.text = @superclass
 	end
 
