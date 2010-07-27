@@ -11,7 +11,7 @@ basedir = "/usr/share/mof/cim-current"
 package = nil
 if arg == "-b"
   basedir = ARGV.shift
-else
+elsif arg
   package = arg.chomp
 end
 
