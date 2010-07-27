@@ -36,7 +36,7 @@ puts "<h1>Classes implemented by #{package}</h1>"
 puts
 
 content.each do |l|
-  next unless l =~ /.mof$/
+  next unless l =~ /\.mof$/
   next if l =~ /deploy.mof/
   l.chomp!
   parent = File.dirname(l)
