@@ -38,8 +38,10 @@ module CIM
 	    else
 	      params << ", "
 	    end
-	    params << "[IN] " if p.qualifiers.include? :in
-	    params << "[OUT] " if p.qualifiers.include? :out
+	    if p.qualifiers
+	      params << "[IN] " if p.qualifiers.include? :in
+	      params << "[OUT] " if p.qualifiers.include? :out
+	    end
 	    params << "#{p.name}"
 	  end
 	  params << ")"
@@ -166,7 +168,7 @@ def class2html c
   head.add_element "meta", "http-equiv" => "Content-type", "content" => "text/html; charset=utf-8"
   title = head.add_element "title"
   title.text = "Class #{name}"
-  css = head.add_element "link", "rel" => "stylesheet", "href" => "mofhtml.css", "type" => "text/css", "media" => "screen,projection,print"
+  css = head.add_element "link", "rel" => "stylesheet", "href" => "../mofhtml.css", "type" => "text/css", "media" => "screen,projection,print"
   body = html.add_element "body"
   c.to_html body.add_element("div", "class" => "outer_div")
   doc
