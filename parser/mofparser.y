@@ -285,6 +285,8 @@ rule
 
   referenceName
 	: IDENTIFIER
+	| INDICATION
+	  { result = "Indication" }
         ;
 
   methodName
