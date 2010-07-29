@@ -172,6 +172,9 @@ class Output
     @indent = 0 if @indent < 0
     self
   end
+  def write str
+    @file.write str
+  end
   def puts str=""
     indent
     @file.puts str
@@ -185,8 +188,8 @@ class Output
     self
   end
   def printf format, *args
-    printf @file, format, *args
-    @file.puts
+    indent
+    Kernel.printf @file, format, *args
     self
   end
 end
@@ -205,7 +208,32 @@ def mkdef out, feature
     raise "Unknown feature class #{feature.class}"
   end
   mkdescription out, feature
-  out.puts("def #{feature.name}").inc
+#  puts feature.name
+  name = feature.name.gsub(/[A-Z]+/) do |match|
+#    puts "#{$`}<#{match}>#{$'}"
+    if $`.empty? || $`[-1,1] == "_" || $'.empty? || $'[0,1] == "_"
+      match.downcase
+    else
+      "_#{match.downcase}"
+    end
+  end
+  
+  out.printf "def %s", name
+  if feature.method?
+    out.write " ("
+    first = true
+    feature.parameters.each do |p|
+      if first
+	first = false
+      else
+	out.write ", "
+      end
+      out.write p.name
+      out.write "_out" if p.qualifiers.include? :out
+    end
+    out.write ")"
+  end
+  out.puts.inc
 end
 
 #
@@ -298,11 +326,20 @@ end
 
 #------------------------------------------------------------------
 
+cim_current = "/usr/share/mof/cim-current"
+
 moffiles, options = Mofparser.argv_handler "genprovider", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
-options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
+options[:includes].unshift(Pathname.new cim_current)
+
+Dir.new(cim_current).each do |d|
+  next if d[0,1] == "."
+  fullname = File.join(cim_current, d)
+  next unless File.stat(fullname).directory?
+  options[:includes].unshift(Pathname.new fullname)
+end
 
 moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
 moffiles.unshift "qualifiers_optional.mof" unless moffiles.include? "qualifiers_optional.mof"
@@ -318,13 +355,46 @@ end
 
 exit 0 unless result
 
+#
+# collect classes to find parent classes
+#
+classes = {}
 result.each do |name, res|
-  output = if options[:output]
-             File.open(options[:output], "w+")
-	   else
-	     $stdout
-	   end
   res.classes.each do |c|
-    class2provider c, output
+    classes[c.name] = c unless classes.has_key? c.name
   end
+end
+
+classes.each_value do |c|
+  next unless c.superclass
+  next if classes.has_key? c.superclass
+  # parent unknown
+  #  try parent.mof
+  begin
+    parser = Mofparser.new options
+    result = parser.parse ["qualifiers.mof", "#{c.superclass}.mof"]
+    if result
+      result.each_value do |r|
+	r.classes.each do |parent|
+	  if parent.name == c.superclass
+	    classes[parent.name] = parent
+	  end
+	end
+      end
+    else
+      $stderr.puts "Warn: Parent #{c.superclass} of #{c.name} not known"
+    end
+  rescue Exception => e
+    parser.error_handler e
+  end
+end
+
+output = if options[:output]
+           File.open(options[:output], "w+")
+	 else
+	   $stdout
+	 end
+
+classes.each_value do |c|
+  class2provider c, output
 end
