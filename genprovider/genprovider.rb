@@ -151,6 +151,8 @@ module CIM
   end
 end
 
+#-------------------------------------------------------------
+
 class Output
   private
   def indent
@@ -189,6 +191,67 @@ class Output
   end
 end
 
+def mkdescription out, element
+  p = element.qualifiers["description", :string]
+  out.comment p.value if p
+end
+
+def mkdef out, feature
+  case feature
+  when CIM::Schema::Property: out.comment "Property"
+  when CIM::Schema::Reference: out.comment "Reference"
+  when CIM::Schema::Method: out.comment "Method"
+  else
+    raise "Unknown feature class #{feature.class}"
+  end
+  mkdescription out, feature
+  out.puts("def #{feature.name}").inc
+end
+
+#
+# generate provider code for property
+#
+
+def property2provider property, out
+  mkdef out, property
+  out.dec.puts("end")
+end
+
+#
+# generate provider code for reference
+#
+
+def reference2provider reference, out
+  mkdef out, reference
+  out.dec.puts("end")
+end
+
+#
+# generate provider code for method
+#
+
+def method2provider method, out
+  mkdef out, method
+  out.dec.puts("end")
+end
+
+#
+# generate provider code for features matching match
+#
+
+def features2provider features, out, match
+  features.each do |f|
+    next unless f.instance_of? match
+    case f
+    when CIM::Schema::Property: property2provider f, out
+    when CIM::Schema::Reference: reference2provider f, out
+    when CIM::Schema::Method: method2provider f, out
+    else
+      raise "Unknown feature class #{f.class}"
+    end
+  end
+end
+
 #
 # generate provider code for class 'c'
 #
@@ -207,11 +270,7 @@ def class2provider c, file = $stdout
   out.comment
   out.puts("module Cmpi").inc
 
-  #
-  # class description
-  #
-  p = c.qualifiers["description", :string]
-  out.comment p.value if p
+  mkdescription out, c
   #
   # baseclass and interfaces
   #
@@ -227,8 +286,14 @@ def class2provider c, file = $stdout
   providertypes.each do |t|
     out.puts "include #{t}IF"
   end
-  out.dec.puts("end")
-  out.dec.puts "end"
+  # normal properties
+  features2provider c.features, out, CIM::Schema::Property
+  # reference properties
+  features2provider c.features, out, CIM::Schema::Reference
+  # methods
+  features2provider c.features, out, CIM::Schema::Method
+  out.dec.puts("end") # class
+  out.dec.puts "end" # module
 end
 
 #------------------------------------------------------------------
