@@ -151,11 +151,50 @@ module CIM
   end
 end
 
+class Output
+  private
+  def indent
+    @file.write "  " * @indent
+  end
+  public
+  def initialize file
+    @file = file
+    @indent = 0
+  end
+  def inc
+    @indent += 1
+    self
+  end
+  def dec
+    @indent -= 1
+    @indent = 0 if @indent < 0
+    self
+  end
+  def puts str=""
+    indent
+    @file.puts str
+    self
+  end
+  def comment str=""
+    indent
+    @file.write "#"
+    @file.write "  #{str}" if str.size > 0
+    @file.puts
+    self
+  end
+  def printf format, *args
+    printf @file, format, *args
+    @file.puts
+    self
+  end
+end
+
 #
 # generate provider code for class 'c'
 #
 
-def class2provider c
+def class2provider c, file = $stdout
+  out = Output.new file
   #
   # Header: class name, provider name (Class qualifier 'provider')
   #
@@ -163,12 +202,19 @@ def class2provider c
   p = c.qualifiers["provider", :string]
 
   providername = p.value if p
-  puts "#\n# Provider #{providername} for class #{c.name}\n#\n"
-  puts "module Cmpi"
+  out.comment
+  out.comment "Provider #{providername} for class #{c.name}"
+  out.comment
+  out.puts("module Cmpi").inc
+
   #
-  # 
+  # class description
   #
   p = c.qualifiers["description", :string]
+  out.comment p.value if p
+  #
+  # baseclass and interfaces
+  #
   providertypes = []
   providertypes << "InstanceProvider" if c.instance?
   providertypes << "MethodProvider" if c.method?
@@ -176,12 +222,13 @@ def class2provider c
   providertypes << "IndicationProvider" if c.indication?
 
   raise "Unknown provider type" if providertypes.empty?
-  puts "  class #{c.name}Provider < #{providertypes.shift}"
+
+  out.puts("class #{c.name}Provider < #{providertypes.shift}").inc
   providertypes.each do |t|
-    puts "    include #{t}IF"
+    out.puts "include #{t}IF"
   end
-  puts "  end"
-  puts "end"
+  out.dec.puts("end")
+  out.dec.puts "end"
 end
 
 #------------------------------------------------------------------
@@ -207,7 +254,12 @@ end
 exit 0 unless result
 
 result.each do |name, res|
+  output = if options[:output]
+             File.open(options[:output], "w+")
+	   else
+	     $stdout
+	   end
   res.classes.each do |c|
-    class2provider c
+    class2provider c, output
   end
 end
