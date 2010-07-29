@@ -193,6 +193,7 @@ options[:includes].unshift(Pathname.new ".")
 options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
 
 moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
+moffiles.unshift "qualifiers_optional.mof" unless moffiles.include? "qualifiers_optional.mof"
 
 parser = Mofparser.new options
 
