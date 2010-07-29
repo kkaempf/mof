@@ -267,7 +267,7 @@ rule
 	  { if val[4]
 	      raise StyleError.new(@name,@lineno,@line,"Array not allowed in reference declaration") unless @style == :wmi
 	    end
-	    result = CIM::Schema::Property.new(val[1],val[2],val[0],val[4]) }
+	    result = CIM::Schema::Reference.new(val[1],val[2],val[0],val[4]) }
         ;
 
   methodDeclaration
