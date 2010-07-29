@@ -6,3 +6,8 @@ task :test do
     ruby File.join("tests",t)
   end
 end
+
+task :clean do
+  system "rm -f tests/output.rb"
+  system "rm -f core"
+end
