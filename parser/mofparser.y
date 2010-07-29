@@ -638,6 +638,7 @@ end
 	$stderr.puts "\t-h  this help"
 	$stderr.puts "\t-I <dir>  include dir"
 	$stderr.puts "\t-n <namespace>"
+	$stderr.puts "\t-o <output>"
 	$stderr.puts "\t-s <style>  syntax style (wmi,cim)"
 	$stderr.puts "\t-q  quiet"
 	$stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
@@ -654,6 +655,7 @@ end
 	end
 	options[:includes] << Pathname.new(dirname)
       when "-n": options[:namespace] = argv.shift
+      when "-o": options[:output] = argv.shift
       when /^-.+/:
 	$stderr.puts "Undefined option #{opt}"
       else
