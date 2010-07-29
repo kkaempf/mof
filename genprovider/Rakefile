@@ -1,0 +1,8 @@
+task :default => [:test]
+
+task :test do
+  Dir.foreach("tests") do |t|
+    next unless t =~ /^.*_test.rb$/
+    ruby File.join("tests",t)
+  end
+end
