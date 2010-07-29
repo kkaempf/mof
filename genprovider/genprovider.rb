@@ -154,14 +154,16 @@ end
 #-------------------------------------------------------------
 
 class Output
-  private
+ private
   def indent
-    @file.write "  " * @indent
+    @file.write " " * @depth * @indent
   end
-  public
+ public
   def initialize file
     @file = file
     @indent = 0
+    @wrap = 75 # wrap at this column
+    @depth = 2 # indent depth
   end
   def inc
     @indent += 1
@@ -180,10 +182,35 @@ class Output
     @file.puts str
     self
   end
-  def comment str=""
+  def comment str=nil
+    if str =~ /\\n/
+      comment $`
+      comment $'
+      return
+    end
+    wrap = @wrap - (@depth * @indent + 2)
+    if str && str.size > wrap # must wrap
+#      puts "#{str.size} > #{wrap}"
+      pivot = wrap
+      while pivot > 0 && str[pivot] != 32 # search space left of wrap
+        pivot -= 1
+      end
+      if pivot == 0 # no space left of wrap
+        pivot = wrap
+        while pivot < str.size && str[pivot] != 32 # search space right of wrap
+          pivot += 1
+        end
+      end
+      if 0 < pivot && pivot < str.size
+#        puts "-wrap @ #{pivot}-"
+        comment str[0,pivot]
+	comment str[pivot+1..-1]
+	return
+      end
+    end
     indent
     @file.write "#"
-    @file.write "  #{str}" if str.size > 0
+    @file.write " #{str}" if str
     @file.puts
     self
   end
@@ -342,7 +369,7 @@ Dir.new(cim_current).each do |d|
 end
 
 moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
-moffiles.unshift "qualifiers_optional.mof" unless moffiles.include? "qualifiers_optional.mof"
+#moffiles.unshift "qualifiers_optional.mof" unless moffiles.include? "qualifiers_optional.mof"
 
 parser = Mofparser.new options
 
