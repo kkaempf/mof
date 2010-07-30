@@ -204,8 +204,8 @@ class Output
   def comment str=nil
     if str =~ /\\n/
       comment $`
-      comment $'
-      return
+      comment $' #'
+      return self
     end
     wrap = @wrap - (@depth * @indent + 2)
     if str && str.size > wrap # must wrap
@@ -224,7 +224,7 @@ class Output
 #        puts "-wrap @ #{pivot}-"
         comment str[0,pivot]
 	comment str[pivot+1..-1]
-	return
+	return self
       end
     end
     indent
@@ -242,12 +242,14 @@ end
 
 def mkdescription out, element
   p = element.qualifiers["description", :string]
-  out.comment p.value if p
+  out.comment
+  out.comment(p.value).comment if p
 end
 
 def mkdef out, feature
   case feature
-  when CIM::Schema::Property: out.comment "Property"
+  when CIM::Schema::Property:
+    # skip
   when CIM::Schema::Reference: out.comment "Reference"
   when CIM::Schema::Method: out.comment "Method"
   else
@@ -330,8 +332,7 @@ end
 # generate provider code for class 'c'
 #
 
-def class2provider c, file = $stdout
-  out = Output.new file
+def class2provider c, out
   #
   # Header: class name, provider name (Class qualifier 'provider')
   #
@@ -437,12 +438,10 @@ classes.each_value do |c|
   end
 end
 
-output = if options[:output]
-           File.open(options[:output], "w+")
-	 else
-	   $stdout
-	 end
+out = Output.new(options[:output] ? File.open(options[:output], "w+") : $stdout)
+
+out.puts("require 'cmpi-bindings'").puts
 
 classes.each_value do |c|
-  class2provider c, output
+  class2provider c, out
 end
