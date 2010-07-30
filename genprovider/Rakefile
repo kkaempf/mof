@@ -1,13 +1,8 @@
-task :default => [:test]
+require 'rubygems'
+require 'cucumber/rake/task'
 
-task :test do
-  Dir.foreach("tests") do |t|
-    next unless t =~ /^.*_test.rb$/
-    ruby File.join("tests",t)
-  end
-end
+task :default => [:cucumber]
 
-task :clean do
-  system "rm -f tests/output.rb"
-  system "rm -f core"
+Cucumber::Rake::Task.new do |t|
+  t.cucumber_opts = %w{--format pretty tests/features}
 end
