@@ -1,5 +1,4 @@
-rbmof - A racc based parser for MOF files
-
+mofparser - A pure Ruby (racc based) parser for MOF files + tools
 
 Nothing very fancy, but a nice way to learn about Racc (Ruby Yacc).
 
@@ -7,4 +6,4 @@ Nothing very fancy, but a nice way to learn about Racc (Ruby Yacc).
 Go to 'src' and run 'make'
 
 Then
-  ruby rbmof.rb < file.mof
+  ruby mofparser.rb file.mof
