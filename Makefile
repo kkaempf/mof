@@ -1,6 +1,6 @@
 all:
 	(cd parser; make)
-	(cd src; make)
+	(cd tools; make)
 
 test: all
 	(cd test; make)
