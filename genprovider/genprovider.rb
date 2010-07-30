@@ -1,8 +1,27 @@
+#!/usr/bin/ruby
 #
-# mofhtml.rb
+# genprovider
 #
-# MOF to HTML converter
+#  Generate Ruby provider templates for use with cmpi-bindings
 #
+# == Usage
+#
+# genprovider.rb [-d] [-h] [-q] [-I <includedir>] [-o <output>] <moffile> [<moffile> ...]
+#
+# -d:
+#   turn on debugging
+# -h:
+#   show (this) help
+# -q:
+#   be quiet
+# -I <includedir>
+#   additional include directories to search
+# -o <output>
+#   provider file to write
+# <moffile>
+#   .mof files to read
+#
+require 'rdoc/usage'
 
 require "rexml/document"
 require 'pathname'
@@ -356,6 +375,8 @@ end
 cim_current = "/usr/share/mof/cim-current"
 
 moffiles, options = Mofparser.argv_handler "genprovider", ARGV
+RDoc::usage if moffiles.empty?
+
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
