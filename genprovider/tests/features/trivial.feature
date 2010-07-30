@@ -16,4 +16,4 @@ Feature: Ability to parse a mof and create a template
     Given I have a mof file called "trivial.mof"
     When I pass "trivial.mof" to genprovider
     Then comment lines should not exceed "75" characters
-  
+    And it should be accepted by "ruby"  

@@ -440,7 +440,7 @@ end
 
 out = Output.new(options[:output] ? File.open(options[:output], "w+") : $stdout)
 
-out.puts("require 'cmpi-bindings'").puts
+out.puts("require 'cmpi'").puts
 
 classes.each_value do |c|
   class2provider c, out

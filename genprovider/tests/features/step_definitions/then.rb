@@ -13,3 +13,11 @@ Then /^comment lines should not exceed "([^"]*)" characters$/ do |arg1| #"
   end
   true
 end
+
+Then /^it should be accepted by "([^"]*)"$/ do |arg1| #"
+  if system(arg1, "output.rb")
+    $? == 0
+  else
+    false
+  end
+end
