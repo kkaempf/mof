@@ -139,17 +139,18 @@ module ParseHelper
   # error_handler
   #
   def error_handler e
+    $stderr.puts "*** #{@name}:#{@lineno}:"
     case e
     when StyleError
-      $stderr.puts "#{e.name}:#{e.line}: Syntax does not comply to '#{self.style}' style"
+      $stderr.puts "\t Syntax does not comply to '#{self.style}' style"
     when ScannerError
-      $stderr.puts "*** ScannerError: #{$!}"
+      $stderr.puts "\t ScannerError: #{$!}"
     when ParserError
-      $stderr.puts "*** ParserError: #{$!}"
+      $stderr.puts "\t ParserError: #{$!}"
     when RbmofError
-      $stderr.puts "*** Error: #{$!}"
+      $stderr.puts "\t Error: #{$!}"
     else
-      $stderr.puts "*** Exception: #{$!}[#{$!.class}]"
+      $stderr.puts "\t Exception: #{$!}[#{$!.class}]"
       $stderr.puts $@
     end
   end
