@@ -174,7 +174,7 @@ rule
 	      else
 	        nil
 	      end
-	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
+	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]} <#{val[0].class}>' is not a valid qualifier") unless qualifier
 	    value = val[1]
 	    raise RbmofError.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
