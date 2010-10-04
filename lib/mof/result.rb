@@ -1,4 +1,5 @@
-class MofResult
+module MOF
+class Result
   attr_reader :classes, :associations, :indications, :qualifiers, :instances
     
   def initialize
@@ -31,4 +32,4 @@ class MofResult
     s
   end
 end
-
+end

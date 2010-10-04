@@ -1,5 +1,5 @@
 #
-# mofscanner.rb
+# scanner.rb
 #
 # A scanner module for MOF files
 # to extend the Scanner class (via include)
@@ -21,7 +21,8 @@
 
 require 'iconv'
 
-module Mofscanner
+module MOF
+module Scanner
   def fill_queue
     if @file.eof?
 #      $stderr.puts "eof ! #{@fstack.size}"
@@ -44,7 +45,7 @@ module Mofscanner
 #    $stderr.puts "scan(#{@line})" unless @quiet
     scanner = StringScanner.new(@line)
 
-    until scanner.empty?
+    until scanner.eos?
 #      $stderr.puts "#{@q.size}:\"#{scanner.rest}\""
       if @in_comment
 	if scanner.scan(%r{.*\*/})
@@ -117,35 +118,35 @@ module Mofscanner
 
       when m = scanner.scan(%r{\w+})
 	case m.downcase
-	when "amended": @q.push [:AMENDED, CIM::Meta::Flavors.new(m)]
+	when "amended": @q.push [:AMENDED, CIM::QualifierFlavors.new(m)]
 	when "any": @q.push [:ANY, m]
 	when "as": @q.push [:AS, nil]
-	when "association": @q.push [:ASSOCIATION, CIM::Meta::Qualifier.new(m.downcase)]
+	when "association": @q.push [:ASSOCIATION, CIM::QualifierDeclaration.new(m.downcase)]
 	when "class": @q.push( [:CLASS, m] )
-	when "disableoverride": @q.push [:DISABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
-	when "void": @q.push [:DT_VOID, CIM::Meta::Type.new(:void)]
-	when "boolean": @q.push [:DT_BOOL, CIM::Meta::Type.new(:bool)]
-	when "char16": @q.push [:DT_CHAR16, CIM::Meta::Type.new(m)]
-	when "datetime": @q.push [:DT_DATETIME, CIM::Meta::Type.new(m)]
-	when "real32": @q.push [:DT_REAL32, CIM::Meta::Type.new(m)]
-	when "real64": @q.push [:DT_REAL64, CIM::Meta::Type.new(m)]
-	when "sint16": @q.push [:DT_SINT16, CIM::Meta::Type.new(m)]
-	when "sint32": @q.push [:DT_SINT32, CIM::Meta::Type.new(m)]
-	when "sint64": @q.push [:DT_SINT64, CIM::Meta::Type.new(m)]
-	when "sint8": @q.push [:DT_SINT8, CIM::Meta::Type.new(m)]
-	when "string": @q.push [:DT_STR, CIM::Meta::Type.new(m)]
-	when "uint16": @q.push [:DT_UINT16, CIM::Meta::Type.new(m)]
-	when "uint32": @q.push [:DT_UINT32, CIM::Meta::Type.new(m)]
-	when "uint64": @q.push [:DT_UINT64, CIM::Meta::Type.new(m)]
-	when "uint8": @q.push [:DT_UINT8, CIM::Meta::Type.new(m)]
-	when "enableoverride": @q.push [:ENABLEOVERRIDE, CIM::Meta::Flavors.new(m)]
+	when "disableoverride": @q.push [:DISABLEOVERRIDE, CIM::QualifierFlavors.new(m)]
+	when "void": @q.push [:DT_VOID, CIM::Type.new(:void)]
+	when "boolean": @q.push [:DT_BOOL, CIM::Type.new(:bool)]
+	when "char16": @q.push [:DT_CHAR16, CIM::Type.new(m)]
+	when "datetime": @q.push [:DT_DATETIME, CIM::Type.new(m)]
+	when "real32": @q.push [:DT_REAL32, CIM::Type.new(m)]
+	when "real64": @q.push [:DT_REAL64, CIM::Type.new(m)]
+	when "sint16": @q.push [:DT_SINT16, CIM::Type.new(m)]
+	when "sint32": @q.push [:DT_SINT32, CIM::Type.new(m)]
+	when "sint64": @q.push [:DT_SINT64, CIM::Type.new(m)]
+	when "sint8": @q.push [:DT_SINT8, CIM::Type.new(m)]
+	when "string": @q.push [:DT_STR, CIM::Type.new(m)]
+	when "uint16": @q.push [:DT_UINT16, CIM::Type.new(m)]
+	when "uint32": @q.push [:DT_UINT32, CIM::Type.new(m)]
+	when "uint64": @q.push [:DT_UINT64, CIM::Type.new(m)]
+	when "uint8": @q.push [:DT_UINT8, CIM::Type.new(m)]
+	when "enableoverride": @q.push [:ENABLEOVERRIDE, CIM::QualifierFlavors.new(m)]
 	when "false": @q.push [:booleanValue, false]
 	when "flavor": @q.push [:FLAVOR, nil]
 	when "include": @q.push [:INCLUDE, nil]
-	when "indication": @q.push [:INDICATION, CIM::Meta::Qualifier.new(m.downcase)]
+	when "indication": @q.push [:INDICATION, CIM::QualifierDeclaration.new(m.downcase)]
 	when "instance": @q.push [:INSTANCE, m.to_sym]
 	when "method": @q.push [:METHOD, m]
-	when "null": @q.push [:nullValue, CIM::Meta::Variant.new(:null,nil)]
+	when "null": @q.push [:nullValue, CIM::Variant.new(:null,nil)]
 	when "of": @q.push [:OF, nil]
 	when "parameter": @q.push [:PARAMETER, m]
 	when "pragma": @q.push [:PRAGMA, nil]
@@ -153,22 +154,22 @@ module Mofscanner
 	when "qualifier": @q.push [:QUALIFIER, m]
 	when "ref": @q.push [:REF, nil]
 	when "reference": @q.push [:REFERENCE, m]
-	when "restricted": @q.push [:RESTRICTED, CIM::Meta::Flavors.new(m)]
+	when "restricted": @q.push [:RESTRICTED, CIM::QualifierFlavors.new(m)]
 	when "schema": @q.push [:SCHEMA, m]
 	when "scope": @q.push [:SCOPE, nil]
-	when "toinstance": @q.push [:TOINSTANCE, CIM::Meta::Flavors.new(m)]
-	when "tosubclass": @q.push [:TOSUBCLASS, CIM::Meta::Flavors.new(m)]
-	when "translatable": @q.push [:TRANSLATABLE, CIM::Meta::Flavors.new(m)]
+	when "toinstance": @q.push [:TOINSTANCE, CIM::QualifierFlavors.new(m)]
+	when "tosubclass": @q.push [:TOSUBCLASS, CIM::QualifierFlavors.new(m)]
+	when "translatable": @q.push [:TRANSLATABLE, CIM::QualifierFlavors.new(m)]
 	when "true": @q.push [:booleanValue, true]
 	else
 	  @q.push( [:IDENTIFIER, m] )
 	end # case m.downcase
       
       else
-	require File.join(File.dirname(__FILE__), 'parse_helper')
+	require File.join(File.dirname(__FILE__), 'helper')
 	raise ParseHelper::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
       end # case
-    end # until scanner.empty?
+    end # until scanner.eos?
 #    $stderr.puts "scan done, @q #{@q.size} entries"
     true
   end
@@ -201,4 +202,5 @@ module Mofscanner
     raise ParseHelper::ParserError.new @name,@lineno, @line, token,token_value,value_stack
   end
 
-end # module Mofscanner
+end # module Scanner
+end # module MOF

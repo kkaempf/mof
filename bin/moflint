@@ -4,18 +4,16 @@
 # MOF syntax checker
 #  and Mofparser tester
 #
+require 'rubygems'
 require 'pathname'
-require File.dirname(__FILE__) + "/../parser/mofparser"
+require 'mof'
 
-moffiles, options = Mofparser.argv_handler "moflint", ARGV
+moffiles, options = MOF::Parser.argv_handler "moflint", ARGV
 options[:style] ||= :cim;
 options[:includes] ||= []
 options[:includes].unshift(Pathname.new ".")
-options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
 
-moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
-
-parser = Mofparser.new options
+parser = MOF::Parser.new options
 
 begin
   result = parser.parse moffiles

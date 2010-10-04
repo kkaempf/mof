@@ -1,0 +1,63 @@
+= mof
+
+* http://github.com/kkaempf/mof
+
+== DESCRIPTION:
+
+A parser for the Managed Object Format (MOF) language used to describe
+classes and instances of the Common Information Model (CIM)
+
+See http://www.dmtf.org/education/mof
+
+== FEATURES/PROBLEMS:
+
+* Uses Racc (Ruby Yacc) as parser generator
+* Provides class information as Ruby objects (using the 'cim' gem)
+* Can switch between DMTFs standard format and the one used in
+  Microsofts WMI implementation (http://msdn.microsoft.com/en-us/library/aa823192(VS.85).aspx)
+
+== SYNOPSIS:
+
+* A simple mof reader for validation of MOF files
+
+  require 'mof'
+  moffiles, options = Mofparser.argv_handler "moflint", ARGV
+  options[:style] ||= :cim;
+  options[:includes] ||= []
+  options[:includes].unshift(Pathname.new ".")
+  options[:includes].unshift(Pathname.new "/usr/share/mof/cim-current")
+  
+  moffiles.unshift "qualifiers.mof" unless moffiles.include? "qualifiers.mof"
+
+  parser = Mofparser.new options
+
+  begin
+    result = parser.parse moffiles
+  rescue Exception => e
+    parser.error_handler e
+    exit 1
+  end
+      
+  result.each do |name,res|
+  puts "/*=============== #{name} ===================*/\n"
+    puts res
+  end
+	  
+
+== REQUIREMENTS:
+
+* cim (http://rubygems.org/gems/cim)
+  (https://build.opensuse.org/package/show?package=rubygem-cim&project=devel:languages:ruby:extensions)
+  
+== INSTALL:
+
+* sudo gem install cim
+  (or use rubygem-cim rpm)
+
+== LICENSE:
+
+(The Ruby License)
+
+Copyright (c) 2010 Klaus Kämpf <kkaempf@suse.de>
+
+See http://www.ruby-lang.org/en/LICENSE.txt for the full text

@@ -1,9 +1,0 @@
-mofparser - A pure Ruby (racc based) parser for MOF files + tools
-
-Nothing very fancy, but a nice way to learn about Racc (Ruby Yacc).
-
-
-Go to 'src' and run 'make'
-
-Then
-  ruby mofparser.rb file.mof

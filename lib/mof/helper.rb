@@ -5,8 +5,11 @@
 #
 #
 
-module ParseHelper
+module MOF
+module Helper
 
+  require 'pathname'
+  
   def lineno
     @lineno
   end
@@ -32,19 +35,24 @@ module ParseHelper
       file = name
     else
       $stderr.puts "open #{name} [#{origin}]" unless @quiet
-      p = Pathname.new name
       file = nil
-      @includes.each do |incdir|
-	f = incdir + p
-#	      $stderr.puts "Trying '#{f}': #{File.exists?(f)}"
-	file = File.open( f ) if File.readable?( f )
-	break if file
-#	$stderr.puts "\tNope"
+      if name[0,1] == "/"
+	# absolute path
+	file = File.open( name ) if File.readable?( name )
+      else
+	# relative path, try each include dir
+	@includes.each do |incdir|
+	  f = File.join(incdir, name)
+#	  $stderr.puts "Trying '#{f}': #{File.exists?(f)}"
+	  file = File.open( f ) if File.readable?( f )
+	  break if file
+	  #	$stderr.puts "\tNope"
+	end
       end
       unless file
-	if @name && name[0,1] != "/" # not absolute
-	  dir = File.dirname(@name)           # try same dir as last file
-	  f = dir + "/" + p
+	if name && name[0,1] != "/" # not absolute
+	  dir = File.dirname(name)           # try same dir as last file
+	  f = File.join(dir, p)
 	  file = File.open(f) if File.readable?( f )
 	end
       end
@@ -60,7 +68,7 @@ module ParseHelper
     @file = file
     @name = name
     @lineno = 1
-    @result = MofResult.new
+    @result = MOF::Result.new
     # read the byte order mark to check for utf-16 windows files
     bom = @file.read(2)
     if bom == "\376\377"
@@ -84,7 +92,7 @@ module ParseHelper
   #
   
   # to be used to flag @style issues
-  class RbmofError < ::SyntaxError
+  class Error < ::SyntaxError
     attr_reader :name, :lineno, :line, :msg
     def initialize name, lineno, line, msg
       @name,@lineno,@line,@msg = name, lineno, line, msg
@@ -94,13 +102,13 @@ module ParseHelper
     end
   end
   
-  class ScannerError < RbmofError
+  class ScannerError < Error
     def initialize name, lineno, line, msg
       super name,lineno,line,"Unrecognized '#{msg}'"
     end
   end
   
-  class ParserError < RbmofError
+  class ParserError < Error
     attr_reader :line, :token, :token_value, :stack
     def initialize name, lineno, line, token, token_value, stack
       @token,@token_value,@stack = token, token_value, stack
@@ -131,7 +139,7 @@ module ParseHelper
     end
   end
   
-  class StyleError < RbmofError
+  class StyleError < Error
   end
   
   public
@@ -147,7 +155,7 @@ module ParseHelper
       $stderr.puts "\t ScannerError: #{$!}"
     when ParserError
       $stderr.puts "\t ParserError: #{$!}"
-    when RbmofError
+    when Error
       $stderr.puts "\t Error: #{$!}"
     else
       $stderr.puts "\t Exception: #{$!}[#{$!.class}]"
@@ -155,4 +163,5 @@ module ParseHelper
     end
   end
   
-end # module ParseHelper
+end # module Helper
+end # module MOF

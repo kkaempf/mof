@@ -1,0 +1,2 @@
+qualifier Description : string,
+  Scope(class, property);

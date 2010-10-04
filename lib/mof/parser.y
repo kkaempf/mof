@@ -3,7 +3,7 @@
  * http://www.dmtf.org/standards/cim/cim_spec_v22
  */
 
-class Mofparser
+class MOF::Parser
   prechigh
 /*    nonassoc UMINUS */
     left '*' '/'
@@ -118,14 +118,14 @@ rule
 	      # least two references must be specified! The
 	      # ASSOCIATION qualifier may be omitted in
 	      # sub associations.
-	      result = CIM::Schema::Association.new(val[2],qualifiers,val[3],val[4],features)
+	      result = CIM::Association.new(val[2],qualifiers,val[3],val[4],features)
 	    elsif qualifiers and qualifiers.include?(:indication, :bool)
 	      # FIXME: 'indication' must be first
 	      # FIXME: features must not include references
-	      result = CIM::Schema::Indication.new(val[2],qualifiers,val[3],val[4],features)
+	      result = CIM::Indication.new(val[2],qualifiers,val[3],val[4],features)
 	    else
 	      # FIXME: features must not include references
-	      result = CIM::Schema::Class.new(val[2],qualifiers,val[3],val[4],features)
+	      result = CIM::Class.new(val[2],qualifiers,val[3],val[4],features)
 	    end
 	  }
         ;
@@ -157,7 +157,7 @@ rule
 
   qualifiers
 	: /* empty */
-	  { result = CIM::Schema::Qualifiers.new }
+	  { result = CIM::Qualifiers.new }
         | qualifiers "," qualifier
 	  { result = val[0]
 	    result << val[2] if val[2]
@@ -168,20 +168,20 @@ rule
 	: qualifierName qualifierParameter_opt flavor_opt
 	  { # Get qualifier decl
 	    qualifier = case val[0]
-	      when CIM::Schema::Qualifier: val[0].definition
-	      when CIM::Meta::Qualifier:   val[0]
-	      when String:                 @qualifiers[val[0].downcase]
-	      else
-	        nil
-	      end
-	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]} <#{val[0].class}>' is not a valid qualifier") unless qualifier
+	      when CIM::Qualifier:            val[0].definition
+	      when CIM::QualifierDeclaration: val[0]
+	      when String:                    @qualifiers[val[0].downcase]
+	    else
+	      nil
+	    end
+	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
 	    value = val[1]
 	    raise RbmofError.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
 	    if qualifier.type == :bool && value == false
 	      result = nil
 	    else
-	      result = CIM::Schema::Qualifier.new(qualifier,value,val[2])
+	      result = CIM::Qualifier.new(qualifier,value,val[2])
 	    end
 	  }
         ;
@@ -210,7 +210,7 @@ rule
         | arrayInitializer
         ;
 
-  /* CIM::Meta::Flavors */
+  /* CIM::Flavors */
   flavor
 	: AMENDED | ENABLEOVERRIDE | DISABLEOVERRIDE | RESTRICTED | TOSUBCLASS | TRANSLATABLE | TOINSTANCE
 	  { case val[0].to_sym
@@ -254,11 +254,11 @@ rule
   propertyDeclaration
 	: qualifierList_opt dataType propertyName array_opt defaultValue_opt ";"
 	  { if val[3]
-	      type = CIM::Meta::Array.new val[3],val[1]
+	      type = CIM::Array.new val[3],val[1]
 	    else
 	      type = val[1]
 	    end
-	    result = CIM::Schema::Property.new(type,val[2],val[0],val[4])
+	    result = CIM::Property.new(type,val[2],val[0],val[4])
 	  }
         ;
 	
@@ -267,12 +267,12 @@ rule
 	  { if val[4]
 	      raise StyleError.new(@name,@lineno,@line,"Array not allowed in reference declaration") unless @style == :wmi
 	    end
-	    result = CIM::Schema::Reference.new(val[1],val[2],val[0],val[4]) }
+	    result = CIM::Reference.new(val[1],val[2],val[0],val[4]) }
         ;
 
   methodDeclaration
 	: qualifierList_opt dataType methodName "(" parameterList_opt ")" ";"
-	  { result = CIM::Schema::Method.new(val[1],val[2],val[0],val[4]) }
+	  { result = CIM::Method.new(val[1],val[2],val[0],val[4]) }
         ;
 
   propertyName
@@ -316,11 +316,11 @@ rule
 	: className
 	  { # WMI uses class names as data types (without REF ?!)
 	    raise StyleError.new(@name,@lineno,@line,"Expected 'ref' keyword after classname '#{val[0]}'") unless @style == :wmi
-	    result = CIM::Meta::Reference.new val[0]
+	    result = CIM::ReferenceType.new val[0]
 	  }
 
 	| className REF
-	  { result = CIM::Meta::Reference.new val[0] }
+	  { result = CIM::ReferenceType.new val[0] }
         ;
 
   parameterList_opt
@@ -342,11 +342,11 @@ rule
   parameter
 	: qualifierList_opt typespec parameterName array_opt parameterValue_opt
 	  { if val[3]
-	      type = CIM::Meta::Array.new val[3], val[1]
+	      type = CIM::Array.new val[3], val[1]
 	    else
 	      type = val[1]
 	    end
-	    result = CIM::Schema::Property.new(type,val[2],val[0])
+	    result = CIM::Property.new(type,val[2],val[0])
 	  }
         ;
 
@@ -488,12 +488,12 @@ rule
           /*      0             1             2     3                 4 */
 	: QUALIFIER qualifierName qualifierType scope defaultFlavor_opt ";"
 	  { qname = val[1]
-	    if qname.is_a?(CIM::Meta::Qualifier)
+	    if qname.is_a?(CIM::QualifierDeclaration)
 	      raise "Wrong default type for #{qname}" unless qname.type.matches?(val[2][0])
 	      raise "Wrong default value for #{qname}" unless qname.type.matches?(val[2][1])
 	      result = qname
 	    else
-	      result = CIM::Meta::Qualifier.new( val[1], val[2][0], val[2][1], val[3], val[4])
+	      result = CIM::QualifierDeclaration.new( val[1], val[2][0], val[2][1], val[3], val[4])
 	    end
 	  }
         ;
@@ -510,10 +510,10 @@ rule
 	| SCHEMA
         ;
 
-        /* [type, Variant] */
+        /* [type, value] */
   qualifierType
 	: ":" dataType array_opt defaultValue_opt
-	  { type = val[2].nil? ? val[1] : CIM::Meta::Array.new(val[2],val[1])
+	  { type = val[2].nil? ? val[1] : CIM::Array.new(val[2],val[1])
 	    result = [ type, val[3] ]
 	  }
         ;
@@ -525,9 +525,9 @@ rule
 
   metaElements
 	: metaElement
-	  { result = CIM::Meta::Scope.new(val[0]) }
+	  { result = CIM::QualifierScope.new(val[0]) }
 	| metaElements "," metaElement
-	  { result = val[0] << CIM::Meta::Scope.new(val[2]) }
+	  { result = val[0] << CIM::QualifierScope.new(val[2]) }
         ;
 
   metaElement
@@ -579,23 +579,24 @@ rule
 	  { raise "Instance property '#{val[1]} must have a value" unless @style == :wmi }
         ;
 
-end # class Mofparser
+end # class Parser
 
 ---- header ----
 
-# rbmof.rb - generated by racc
+# parser.rb - generated by racc
 
 require 'strscan'
-require File.dirname(__FILE__) + '/../../rbcim/rbcim'
-require File.dirname(__FILE__) + '/mofresult'
-require File.dirname(__FILE__) + '/mofscanner'
-require File.dirname(__FILE__) + '/parse_helper'
+require 'rubygems'
+require 'cim'
+require File.join(File.dirname(__FILE__), 'result')
+require File.join(File.dirname(__FILE__), 'scanner')
+require File.join(File.dirname(__FILE__), 'helper')
 
 ---- inner ----
 
 #
-# Initialize Mofparser
-#  Mofparser.new options = {}
+# Initialize MOF::Parser
+#  MOF::Parser.new options = {}
 #
 #  options -> Hash of options
 #    :debug -> bool
@@ -665,7 +666,7 @@ end
     [ files, options ]
   end
 
-include ParseHelper
-include Mofscanner
+include Helper
+include Scanner
 
 ---- footer ----

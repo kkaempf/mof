@@ -1,5 +1,4 @@
 *~
-*.output
-parser/mofparser.rb
-html
-mediawiki
+pkg
+lib/mof/parser.rb
+lib/mof/parser.output
