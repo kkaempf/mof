@@ -65,13 +65,13 @@ rule
  
   compilerDirective
 	: "#" PRAGMA INCLUDE pragmaParameters_opt
-	  { raise RbmofError.new(@name,@lineno,@line,"Missing filename after '#pragma include'") unless val[3]
+	  { raise MOF::Error.new(@name,@lineno,@line,"Missing filename after '#pragma include'") unless val[3]
 	    open val[3], :pragma
 	  }
 	| "#" PRAGMA pragmaName pragmaParameters_opt
 	| "#" INCLUDE pragmaParameters_opt
 	  { raise StyleError.new(@name,@lineno,@line,"Use '#pragma include' instead of '#include'") unless @style == :wmi
-	    raise RbmofError.new(@name,@lineno,@line,"Missing filename after '#include'") unless val[2]
+	    raise MOF::Error.new(@name,@lineno,@line,"Missing filename after '#include'") unless val[2]
 	    open val[2], :pragma
 	  }
         ;
@@ -174,9 +174,9 @@ rule
 	    else
 	      nil
 	    end
-	    raise RbmofError.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
+	    raise MOF::Error.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
 	    value = val[1]
-	    raise RbmofError.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
+	    raise MOF::Error.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
 	    if qualifier.type == :bool && value == false
 	      result = nil
