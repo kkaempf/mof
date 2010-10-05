@@ -18,7 +18,8 @@ class Result
     s = ""
     if array.size > 0
       s << "\n// #{title} [#{array.size}]\n"
-      s << array.join("\n")
+      s << array.join(";\n")
+      s << ";"
     end
     s
   end
