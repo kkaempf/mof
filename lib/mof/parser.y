@@ -65,13 +65,13 @@ rule
  
   compilerDirective
 	: "#" PRAGMA INCLUDE pragmaParameters_opt
-	  { raise MOF::Error.new(@name,@lineno,@line,"Missing filename after '#pragma include'") unless val[3]
+	  { raise MOF::Helper::Error.new(@name,@lineno,@line,"Missing filename after '#pragma include'") unless val[3]
 	    open val[3], :pragma
 	  }
 	| "#" PRAGMA pragmaName pragmaParameters_opt
 	| "#" INCLUDE pragmaParameters_opt
 	  { raise StyleError.new(@name,@lineno,@line,"Use '#pragma include' instead of '#include'") unless @style == :wmi
-	    raise MOF::Error.new(@name,@lineno,@line,"Missing filename after '#include'") unless val[2]
+	    raise MOF::Helper::Error.new(@name,@lineno,@line,"Missing filename after '#include'") unless val[2]
 	    open val[2], :pragma
 	  }
         ;
@@ -174,9 +174,9 @@ rule
 	    else
 	      nil
 	    end
-	    raise MOF::Error.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
+	    raise MOF::Helper::Error.new(@name,@lineno,@line,"'#{val[0]}' is not a valid qualifier") unless qualifier
 	    value = val[1]
-	    raise MOF::Error.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
+	    raise MOF::Helper::Error.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
 	    if qualifier.type == :bool && value == false
 	      result = nil
@@ -487,15 +487,7 @@ rule
   qualifierDeclaration
           /*      0             1             2     3                 4 */
 	: QUALIFIER qualifierName qualifierType scope defaultFlavor_opt ";"
-	  { qname = val[1]
-	    if qname.is_a?(CIM::QualifierDeclaration)
-	      raise "Wrong default type for #{qname}" unless qname.type.matches?(val[2][0])
-	      raise "Wrong default value for #{qname}" unless qname.type.matches?(val[2][1])
-	      result = qname
-	    else
-	      result = CIM::QualifierDeclaration.new( val[1], val[2][0], val[2][1], val[3], val[4])
-	    end
-	  }
+	  { result = CIM::QualifierDeclaration.new( val[1], val[2][0], val[2][1], val[3], val[4]) }
         ;
 
   defaultFlavor_opt
