@@ -20,9 +20,14 @@ class TestQualifiers < Test::Unit::TestCase
 
     name,res = result.shift
     assert !res.qualifiers.empty?
-    res.qualifiers.each do |q|
-      puts "#{q.class}"
-      assert q.is_a? CIM::QualifierDeclaration
-    end
+    # parsed one qualifier
+    assert_equal 1, res.qualifiers.size
+    q = res.qualifiers.shift
+    assert q.is_a? CIM::QualifierDeclaration
+    assert q.type == :string
+    # has two qualifier scopes
+    assert_equal 2, q.scope.size
+    assert q.scope.include? :class
+    assert q.scope.include? :property
   end
 end

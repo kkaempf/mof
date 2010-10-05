@@ -1,2 +1,3 @@
+// simple qualifier declaration
 qualifier Description : string,
   Scope(class, property);
