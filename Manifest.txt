@@ -1,7 +1,6 @@
 History.txt
 Manifest.txt
 README.rdoc
-Rakefile
 bin/moflint
 lib/mof.rb
 lib/mof/helper.rb
