@@ -1,0 +1,4 @@
+// association qualifier declaration
+Qualifier Association : boolean = false, 
+  Scope(association), 
+  Flavor(DisableOverride, ToSubclass);
