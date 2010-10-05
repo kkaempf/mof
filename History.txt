@@ -1,4 +1,14 @@
+=== 0.3.1 2010-10-05
+
+* Fix qualifier declaration parsing
+  added testcases
+
+=== 0.3.0 2010-10-04
+
+* Refactoring
+  Establish 'MOF' namespace
+  Requires 'cim' gem now
+
 === 0.0.1 2010-10-03
 
-* 1 major enhancement:
-  * Initial release
+* Initial release
