@@ -11,7 +11,7 @@ Hoe.plugin :cucumberfeatures
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.spec 'mof' do
   self.developer 'Klaus Kämpf', 'kkaempf@suse.de'
-  self.extra_deps         = [['cim','>= 0.3.0']]
+  self.extra_deps         = [['cim','>= 0.3.1']]
 
 end
 
