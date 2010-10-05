@@ -5,14 +5,13 @@ require 'fileutils'
 
 Hoe.plugin :newgem
 # Hoe.plugin :website
-Hoe.plugin :cucumberfeatures
+# Hoe.plugin :cucumberfeatures
 
 # Generate all the Rake tasks
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.spec 'mof' do
   self.developer 'Klaus Kämpf', 'kkaempf@suse.de'
   self.extra_deps         = [['cim','>= 0.3.1']]
-
 end
 
 require 'newgem/tasks'
@@ -24,6 +23,3 @@ Dir['tasks/**/*.rake'].each { |t| load t }
 
 task :default => [:test]
 
-task :test => [:build]
-
-task :build => ["lib/mof/parser.rb"]
