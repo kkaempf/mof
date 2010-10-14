@@ -49,16 +49,18 @@ module Helper
 	  #	$stderr.puts "\tNope"
 	end
       end
+      # still not found in include dirs ?
       unless file
+	# might be relative to last path
 	if name && name[0,1] != "/" # not absolute
-	  dir = File.dirname(name)           # try same dir as last file
-	  f = File.join(dir, p)
+	  dir = File.dirname(@name)           # try same dir as last file
+	  f = File.join(dir, name)
 	  file = File.open(f) if File.readable?( f )
 	end
       end
-      
+      # no luck opening the file, give up
       unless file
-	return if origin == :pragma
+	return if origin == :pragma # silently ignore failing pragmas
 	$stderr.puts "'#{name}' not found, searched in"
 	@includes.each { |incdir| $stderr.puts "  #{incdir}" }
 	raise "Cannot open #{name}"
