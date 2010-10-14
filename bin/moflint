@@ -19,6 +19,11 @@ options[:includes].unshift(Pathname.new ".")
 
 parser = MOF::Parser.new options
 
+if moffiles.empty?
+  $stderr.puts "Usage: moflint [-I <incdir>] <moffile> [ <moffile> ... ]"
+  exit 1
+end
+
 begin
   result = parser.parse moffiles
 rescue Exception => e
