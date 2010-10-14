@@ -2,3 +2,4 @@
 pkg
 lib/mof/parser.rb
 lib/mof/parser.output
+doc/

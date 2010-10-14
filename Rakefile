@@ -11,8 +11,10 @@ Hoe.plugin :newgem
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.spec 'mof' do
   self.developer 'Klaus Kämpf', 'kkaempf@suse.de'
-  self.extra_deps         = [['cim','>= 0.3.1']]
+  self.extra_deps         = [['cim','>= 0.4.0']]
 end
+
+remove_task :doc
 
 require 'newgem/tasks'
 Dir['tasks/**/*.rake'].each { |t| load t }
