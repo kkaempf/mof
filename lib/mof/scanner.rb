@@ -198,7 +198,7 @@ module Scanner
   # stack_size, last_token, value_stack
   # stack[0] == Result
   def on_error token, token_value, value_stack
-    require File.join(File.dirname(__FILE__), 'parse_helper')
+    require File.join(File.dirname(__FILE__), 'helper')
     raise ParseHelper::ParserError.new @name,@lineno, @line, token,token_value,value_stack
   end
 
