@@ -27,11 +27,11 @@ class TestQualifiers < Test::Unit::TestCase
     assert q.type == :bool
     assert q.default == false
     # has one qualifier scopes
-    assert_equal 1, q.scope.size
-    assert q.scope.include? :association
+    assert_equal 1, q.scopes.size
+    assert q.scopes.include? :association
     # has two qualifier flavors
-    assert_equal 2, q.flavor.size
-    assert q.flavor.include? :disableoverride
-    assert q.flavor.include? :tosubclass
+    assert_equal 2, q.flavors.size
+    assert q.flavors.include? :disableoverride
+    assert q.flavors.include? :tosubclass
   end
 end
