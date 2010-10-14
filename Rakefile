@@ -11,7 +11,7 @@ Hoe.plugin :newgem
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.spec 'mof' do
   self.developer 'Klaus Kämpf', 'kkaempf@suse.de'
-  self.extra_deps         = [['cim','>= 0.4.0']]
+  self.extra_deps         = [['cim','= 0.4.1']]
 end
 
 remove_task :doc
