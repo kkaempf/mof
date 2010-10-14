@@ -167,7 +167,7 @@ module Scanner
       
       else
 	require File.join(File.dirname(__FILE__), 'helper')
-	raise ParseHelper::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
+	raise MOF::Helper::ScannerError.new( @name, @lineno, @line, scanner.rest ) unless scanner.rest.empty?
       end # case
     end # until scanner.eos?
 #    $stderr.puts "scan done, @q #{@q.size} entries"
@@ -199,7 +199,7 @@ module Scanner
   # stack[0] == Result
   def on_error token, token_value, value_stack
     require File.join(File.dirname(__FILE__), 'helper')
-    raise ParseHelper::ParserError.new @name,@lineno, @line, token,token_value,value_stack
+    raise MOF::Helper::ParserError.new @name,@lineno, @line, token,token_value,value_stack
   end
 
 end # module Scanner
