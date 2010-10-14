@@ -132,8 +132,9 @@ rule
 
   classFeatures
 	: /* empty */
+	  { result = [] }
 	| classFeatures classFeature
-	  { result = (val[0]||[]) << val[1] }
+	  { result = val[0] << val[1] }
         ;
 
   classFeature
@@ -146,19 +147,19 @@ rule
   qualifierList_opt
 	: /* empty */
 	| qualifierList
+	  { result = CIM::QualifierSet.new val[0] }
         ;
 
   qualifierList
 	: "[" qualifier qualifiers "]"
 	  { result = val[2]
-	    result.unshift val[1] if val[1]
-	  }
+	    result.unshift val[1] if val[1] }
         ;
 
   qualifiers
 	: /* empty */
-	  { result = CIM::Qualifiers.new }
-        | qualifiers "," qualifier
+	  { result = [] }
+	| qualifiers "," qualifier
 	  { result = val[0]
 	    result << val[2] if val[2]
 	  }
@@ -188,16 +189,9 @@ rule
 
   flavor_opt
 	: /* empty */
-	| ":" qflavors
-	  { result = val[1] }
+	| ":" flavor
+	  { result = CIM::QualifierFlavors.new val[1] }
         ;
-
-  qflavors
-        : flavor
-	  { result = [ val[0] ] }
-	| qflavors flavor
-	  { result = val[0] << val[1] }
-	;
 
   qualifierParameter_opt
 	: /* empty */
@@ -330,13 +324,14 @@ rule
 	
   parameterList
 	: parameter parameters
-	  { result = (val[1]||[]).unshift val[0] }
+	  { result = val[1].unshift val[0] }
         ;
 
   parameters
 	: /* empty */
+	  { result = [] }
 	| parameters "," parameter
-	  { result = (val[0]||[]) << val[2] }
+	  { result = val[0] << val[2] }
         ;
 
   parameter
@@ -512,14 +507,14 @@ rule
 
   scope
 	: "," SCOPE "(" metaElements ")"
-	  { result = val[3] }
+	  { result = CIM::QualifierScopes.new(val[3]) }
         ;
 
   metaElements
 	: metaElement
-	  { result = CIM::QualifierScope.new(val[0]) }
+	  { result = [ val[0] ] }
 	| metaElements "," metaElement
-	  { result = val[0] << CIM::QualifierScope.new(val[2]) }
+	  { result = val[0] << val[2] }
         ;
 
   metaElement
@@ -537,12 +532,12 @@ rule
 
   defaultFlavor
 	: "," FLAVOR "(" flavors ")"
-	  { result = val[3] }
+	  { result = CIM::QualifierFlavors.new val[3] }
         ;
 
   flavors
 	: flavor
-	  { result = val[0] }
+	  { result = [ val[0] ] }
 	| flavors "," flavor
 	  { result = val[0] << val[2] }
         ;

@@ -118,12 +118,12 @@ module Scanner
 
       when m = scanner.scan(%r{\w+})
 	case m.downcase
-	when "amended": @q.push [:AMENDED, CIM::QualifierFlavors.new(m)]
+	when "amended": @q.push [:AMENDED, m]
 	when "any": @q.push [:ANY, m]
 	when "as": @q.push [:AS, nil]
 	when "association": @q.push [:ASSOCIATION, m]
 	when "class": @q.push( [:CLASS, m] )
-	when "disableoverride": @q.push [:DISABLEOVERRIDE, CIM::QualifierFlavors.new(m)]
+	when "disableoverride": @q.push [:DISABLEOVERRIDE, m]
 	when "void": @q.push [:DT_VOID, CIM::Type.new(:void)]
 	when "boolean": @q.push [:DT_BOOL, CIM::Type.new(:bool)]
 	when "char16": @q.push [:DT_CHAR16, CIM::Type.new(m)]
@@ -139,7 +139,7 @@ module Scanner
 	when "uint32": @q.push [:DT_UINT32, CIM::Type.new(m)]
 	when "uint64": @q.push [:DT_UINT64, CIM::Type.new(m)]
 	when "uint8": @q.push [:DT_UINT8, CIM::Type.new(m)]
-	when "enableoverride": @q.push [:ENABLEOVERRIDE, CIM::QualifierFlavors.new(m)]
+	when "enableoverride": @q.push [:ENABLEOVERRIDE, m]
 	when "false": @q.push [:booleanValue, false]
 	when "flavor": @q.push [:FLAVOR, nil]
 	when "include": @q.push [:INCLUDE, nil]
@@ -154,12 +154,12 @@ module Scanner
 	when "qualifier": @q.push [:QUALIFIER, m]
 	when "ref": @q.push [:REF, nil]
 	when "reference": @q.push [:REFERENCE, m]
-	when "restricted": @q.push [:RESTRICTED, CIM::QualifierFlavors.new(m)]
+	when "restricted": @q.push [:RESTRICTED, m]
 	when "schema": @q.push [:SCHEMA, m]
 	when "scope": @q.push [:SCOPE, nil]
-	when "toinstance": @q.push [:TOINSTANCE, CIM::QualifierFlavors.new(m)]
-	when "tosubclass": @q.push [:TOSUBCLASS, CIM::QualifierFlavors.new(m)]
-	when "translatable": @q.push [:TRANSLATABLE, CIM::QualifierFlavors.new(m)]
+	when "toinstance": @q.push [:TOINSTANCE, m]
+	when "tosubclass": @q.push [:TOSUBCLASS, m]
+	when "translatable": @q.push [:TRANSLATABLE, m]
 	when "true": @q.push [:booleanValue, true]
 	else
 	  @q.push( [:IDENTIFIER, m] )
