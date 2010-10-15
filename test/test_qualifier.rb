@@ -26,8 +26,8 @@ class TestQualifiers < Test::Unit::TestCase
     assert q.is_a? CIM::QualifierDeclaration
     assert q.type == :string
     # has two qualifier scopes
-    assert_equal 2, q.scope.size
-    assert q.scope.include? :class
-    assert q.scope.include? :property
+    assert_equal 2, q.scopes.size
+    assert q.scopes.include? :class
+    assert q.scopes.include? :property
   end
 end
