@@ -52,7 +52,7 @@ module Helper
       # still not found in include dirs ?
       unless file
 	# might be relative to last path
-	if name && name[0,1] != "/" # not absolute
+	if @name && @name[0,1] != "/" # not absolute
 	  dir = File.dirname(@name)           # try same dir as last file
 	  f = File.join(dir, name)
 	  file = File.open(f) if File.readable?( f )
