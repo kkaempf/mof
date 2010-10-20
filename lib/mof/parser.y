@@ -625,12 +625,14 @@ end
 	$stderr.puts "\t-d  debug"
 	$stderr.puts "\t-h  this help"
 	$stderr.puts "\t-I <dir>  include dir"
+	$stderr.puts "\t-f  force"
 	$stderr.puts "\t-n <namespace>"
 	$stderr.puts "\t-o <output>"
 	$stderr.puts "\t-s <style>  syntax style (wmi,cim)"
 	$stderr.puts "\t-q  quiet"
 	$stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
 	exit 0
+      when "-f": options[:force] = true
       when "-s": options[:style] = argv.shift.to_sym
       when "-d": options[:debug] = true
       when "-q": options[:quiet] = true
