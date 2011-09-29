@@ -1,9 +1,5 @@
 = mof
 
-* http://github.com/kkaempf/mof
-
-== DESCRIPTION:
-
 A parser for the Managed Object Format (MOF) language used to describe
 classes and instances of the Common Information Model (CIM)
 
@@ -43,16 +39,13 @@ See http://www.dmtf.org/education/mof
     puts res
   end
 	  
-
 == REQUIREMENTS:
 
 * cim (http://rubygems.org/gems/cim)
-  (https://build.opensuse.org/package/show?package=rubygem-cim&project=devel:languages:ruby:extensions)
   
 == INSTALL:
 
-* sudo gem install cim
-  (or use rubygem-cim rpm)
+  gem install cim
 
 == LICENSE:
 
