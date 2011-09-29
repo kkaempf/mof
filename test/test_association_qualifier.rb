@@ -1,13 +1,13 @@
-D = File.expand_path(File.dirname(__FILE__))
+$d = File.expand_path(File.dirname(__FILE__))
 require "test/unit"
-require File.join(D,'..','lib','mof')
+require File.join($d,'..','lib','mof')
 
 class TestQualifiers < Test::Unit::TestCase
 
   def setup
     @moffiles, @options = MOF::Parser.argv_handler "test_qualifier", ["association_qualifier.mof"]
     @options[:style] ||= :cim
-    @options[:includes] ||= [ D, File.join(D,"mof")]
+    @options[:includes] ||= [ $d, File.join($d,"mof")]
 
     @parser = MOF::Parser.new @options
   end
