@@ -20,7 +20,7 @@ See http://www.dmtf.org/education/mof}
   # CIM metamodel
   s.add_dependency("cim", ["~> 0.5"])
 
-  s.files         = `git ls-files`.split("\n")
+  s.files         = `git ls-files`.split("\n") << "lib/mof/parser.rb"
   s.files.reject! { |fn| fn == '.gitignore' }
   s.extra_rdoc_files    = Dir['README*', 'TODO*', 'CHANGELOG*', 'LICENSE']
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
