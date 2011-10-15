@@ -18,7 +18,7 @@ class MOF::Parser
 	DT_VOID
 	DT_UINT8 DT_SINT8 DT_UINT16 DT_SINT16 DT_UINT32 DT_SINT32
 	DT_UINT64 DT_SINT64 DT_REAL32 DT_REAL64 DT_CHAR16 DT_STR
-	DT_BOOL DT_DATETIME
+	DT_BOOLEAN DT_DATETIME
 	positiveDecimalValue
 	stringValue
 	realValue
@@ -108,7 +108,7 @@ rule
 	: qualifierList_opt CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
 	  { qualifiers = val[0]
 	    features = val[6]
-	    if qualifiers and qualifiers.include?(:association, :bool)
+	    if qualifiers and qualifiers.include?(:association, :boolean)
 	      # FIXME: 'association' must be first
               # Context:
 	      #
@@ -119,7 +119,7 @@ rule
 	      # ASSOCIATION qualifier may be omitted in
 	      # sub associations.
 	      result = CIM::Association.new(val[2],qualifiers,val[3],val[4],features)
-	    elsif qualifiers and qualifiers.include?(:indication, :bool)
+	    elsif qualifiers and qualifiers.include?(:indication, :boolean)
 	      # FIXME: 'indication' must be first
 	      # FIXME: features must not include references
 	      result = CIM::Indication.new(val[2],qualifiers,val[3],val[4],features)
@@ -179,7 +179,7 @@ rule
 	    value = val[1]
 	    raise MOF::Helper::Error.new(@name,@lineno,@line,"#{value.inspect} does not match qualifier type '#{qualifier.type}'") unless qualifier.type.matches?(value)||@style == :wmi
 	    # Don't propagate a boolean 'false'
-	    if qualifier.type == :bool && value == false
+	    if qualifier.type == :boolean && value == false
 	      result = nil
 	    else
 	      result = CIM::Qualifier.new(qualifier,value,val[2])
@@ -300,7 +300,7 @@ rule
 	| DT_REAL64
 	| DT_CHAR16
 	| DT_STR
-	| DT_BOOL
+	| DT_BOOLEAN
 	| DT_DATETIME
 	| DT_VOID
 	  { raise StyleError.new(@name,@lineno,@line,"'void' is not a valid datatype") unless @style == :wmi }
@@ -586,7 +586,7 @@ require File.join(File.dirname(__FILE__), 'helper')
 #  MOF::Parser.new options = {}
 #
 #  options -> Hash of options
-#    :debug -> bool
+#    :debug -> boolean
 #    :includes -> array of include dirs
 #    :style -> :cim or :wmi
 #

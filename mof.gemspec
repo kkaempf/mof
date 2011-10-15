@@ -18,7 +18,7 @@ See http://www.dmtf.org/education/mof}
   s.rubyforge_project = "mof"
 
   # CIM metamodel
-  s.add_dependency("cim", ["~> 0.5"])
+  s.add_dependency("cim", ["~> 1.0"])
 
   s.add_development_dependency('rake')
   s.add_development_dependency('bundler')

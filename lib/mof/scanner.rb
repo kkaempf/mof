@@ -125,7 +125,7 @@ module Scanner
 	when "class": @q.push( [:CLASS, m] )
 	when "disableoverride": @q.push [:DISABLEOVERRIDE, m]
 	when "void": @q.push [:DT_VOID, CIM::Type.new(:void)]
-	when "boolean": @q.push [:DT_BOOL, CIM::Type.new(:bool)]
+	when "boolean": @q.push [:DT_BOOLEAN, CIM::Type.new(:boolean)]
 	when "char16": @q.push [:DT_CHAR16, CIM::Type.new(m)]
 	when "datetime": @q.push [:DT_DATETIME, CIM::Type.new(m)]
 	when "real32": @q.push [:DT_REAL32, CIM::Type.new(m)]
