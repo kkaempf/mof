@@ -24,7 +24,7 @@ class TestQualifiers < Test::Unit::TestCase
     assert_equal 1, res.qualifiers.size
     q = res.qualifiers.shift
     assert q.is_a? CIM::QualifierDeclaration
-    assert q.type == :bool
+    assert q.type == :boolean
     assert q.default == false
     # has one qualifier scopes
     assert_equal 1, q.scopes.size
