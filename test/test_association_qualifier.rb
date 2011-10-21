@@ -2,10 +2,10 @@ $d = File.expand_path(File.dirname(__FILE__))
 require "test/unit"
 require File.join($d,'..','lib','mof')
 
-class TestQualifiers < Test::Unit::TestCase
+class TestAssociationQualifiers < Test::Unit::TestCase
 
   def setup
-    @moffiles, @options = MOF::Parser.argv_handler "test_qualifier", ["association_qualifier.mof"]
+    @moffiles, @options = MOF::Parser.argv_handler "test_association_qualifier", ["association_qualifier.mof"]
     @options[:style] ||= :cim
     @options[:includes] ||= [ $d, File.join($d,"mof")]
 
