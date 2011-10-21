@@ -10,6 +10,9 @@
 
 require 'rubygems'
 require 'pathname'
+
+$:.push(File.join(File.dirname(__FILE__), '..', 'lib'))
+
 require 'mof'
 
 moffiles, options = MOF::Parser.argv_handler "moflint", ARGV
