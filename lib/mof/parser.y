@@ -108,25 +108,8 @@ rule
 	: qualifierList_opt CLASS className alias_opt superClass_opt "{" classFeatures "}" ";"
 	  { qualifiers = val[0]
 	    features = val[6]
-	    if qualifiers and qualifiers.include?(:association, :boolean)
-	      # FIXME: 'association' must be first
-              # Context:
-	      #
-	      # The remaining qualifier list must not include
-	      # the ASSOCIATION qualifier again. If the
-	      # association has no super association, then at
-	      # least two references must be specified! The
-	      # ASSOCIATION qualifier may be omitted in
-	      # sub associations.
-	      result = CIM::Association.new(val[2],qualifiers,val[3],val[4],features)
-	    elsif qualifiers and qualifiers.include?(:indication, :boolean)
-	      # FIXME: 'indication' must be first
-	      # FIXME: features must not include references
-	      result = CIM::Indication.new(val[2],qualifiers,val[3],val[4],features)
-	    else
-	      # FIXME: features must not include references
-	      result = CIM::Class.new(val[2],qualifiers,val[3],val[4],features)
-	    end
+	    # FIXME: features must not include references
+	    result = CIM::Class.new(val[2],qualifiers,val[3],val[4],features)
 	  }
         ;
 
