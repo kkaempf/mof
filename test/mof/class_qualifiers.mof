@@ -1,7 +1,12 @@
 qualifier Description : string,
   Scope(class);
+qualifier Indication : boolean,
+  Scope(class);
+qualifier Association : boolean,
+  Scope(class);
   
-[ Description("This is a class with a Description qualifier") ]
+[ Association, Indication, Description("This is a class with a Description qualifier") ]
 class MOF_Test : Parent_Class
 {
+  CIM_OperatingSystem REF GroupComponent;
 };
