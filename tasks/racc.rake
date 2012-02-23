@@ -3,5 +3,6 @@ rule '.rb' => '.y' do |t|
 end
 
 task :test => [:racc]
+task :build => [:racc]
 
 task :racc => ["lib/mof/parser.rb"]
