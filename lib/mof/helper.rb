@@ -124,7 +124,8 @@ module Helper
 	s = stack[idx]
 	c = s.class
 	case s
-	when String, NilClass: s = s.inspect
+	when String, NilClass
+	  s = s.inspect
 	else
 	  s = s.to_s
 	end

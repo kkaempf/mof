@@ -152,9 +152,9 @@ rule
 	: qualifierName qualifierParameter_opt flavor_opt
 	  { # Get qualifier decl
 	    qualifier = case val[0]
-	      when CIM::Qualifier:            val[0].definition
-	      when CIM::QualifierDeclaration: val[0]
-	      when String:                    @qualifiers[val[0].downcase]
+	      when CIM::Qualifier then            val[0].definition
+	      when CIM::QualifierDeclaration then val[0]
+	      when String then                    @qualifiers[val[0].downcase]
 	    else
 	      nil
 	    end
@@ -601,7 +601,7 @@ end
     options = { :namespace => "" }
     while argv.size > 0
       case opt = argv.shift
-      when "-h":
+      when "-h"
 	$stderr.puts "Ruby MOF compiler"
 	$stderr.puts "#{name} [-h] [-d] [-I <dir>] [<moffiles>]"
 	$stderr.puts "Compiles <moffile>"
@@ -615,10 +615,10 @@ end
 	$stderr.puts "\t-q  quiet"
 	$stderr.puts "\t<moffiles>  file(s) to read (else use $stdin)"
 	exit 0
-      when "-f": options[:force] = true
-      when "-s": options[:style] = argv.shift.to_sym
-      when "-d": options[:debug] = true
-      when "-q": options[:quiet] = true
+      when "-f" then options[:force] = true
+      when "-s" then options[:style] = argv.shift.to_sym
+      when "-d" then options[:debug] = true
+      when "-q" then options[:quiet] = true
       when "-I"
 	options[:includes] ||= []
 	dirname = argv.shift
@@ -627,9 +627,9 @@ end
 	  dirname = File.dirname(dirname)
 	end
 	options[:includes] << Pathname.new(dirname)
-      when "-n": options[:namespace] = argv.shift
-      when "-o": options[:output] = argv.shift
-      when /^-.+/:
+      when "-n" then options[:namespace] = argv.shift
+      when "-o" then options[:output] = argv.shift
+      when /^-.+/
 	$stderr.puts "Undefined option #{opt}"
       else
 	files << opt
