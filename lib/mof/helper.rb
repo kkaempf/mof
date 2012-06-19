@@ -44,7 +44,8 @@ module Helper
 	@includes.each do |incdir|
 	  f = File.join(incdir, name)
 #	  $stderr.puts "Trying '#{f}': #{File.exists?(f)}"
-	  file = File.open( f ) if File.readable?( f )
+          f << ".mof" unless File.readable?( f )
+          file = File.open( f ) rescue nil
 	  break if file
 	  #	$stderr.puts "\tNope"
 	end
