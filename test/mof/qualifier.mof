@@ -1,3 +1,6 @@
 // simple qualifier declaration
 qualifier Description : string,
   Scope(class, property);
+
+Qualifier Reference : string = null,
+    Scope(property);
