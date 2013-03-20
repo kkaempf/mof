@@ -477,6 +477,7 @@ rule
 	: IDENTIFIER
 	| ASSOCIATION /* meta qualifier */
 	| INDICATION /* meta qualifier */
+	| REFERENCE /* Added in DSP0004 2.7.0 */
 	| SCHEMA
         ;
 

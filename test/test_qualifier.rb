@@ -21,13 +21,24 @@ class TestQualifiers < Test::Unit::TestCase
     name,res = result.shift
     assert !res.qualifiers.empty?
     # parsed one qualifier
-    assert_equal 1, res.qualifiers.size
-    q = res.qualifiers.shift
-    assert q.is_a? CIM::QualifierDeclaration
-    assert q.type == :string
-    # has two qualifier scopes
-    assert_equal 2, q.scopes.size
-    assert q.scopes.include? :class
-    assert q.scopes.include? :property
+    assert_equal 2, res.qualifiers.size
+    res.qualifiers.each do |q|
+      assert q.is_a? CIM::QualifierDeclaration
+      case q.name
+      when "Description"
+        assert q.type == :string
+        # has two qualifier scopes
+        assert_equal 2, q.scopes.size
+        assert q.scopes.include? :class
+        assert q.scopes.include? :property
+      when "Reference"
+        assert q.type == :string
+        assert_equal 1, q.scopes.size
+        assert q.scopes.include? :property
+      else
+        STDERR.puts "Unhandled QualifierDeclaration for '#{q.name}'"
+        assert false
+      end
+    end
   end
 end
