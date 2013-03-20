@@ -19,10 +19,11 @@
 # @q: Queue of [token,value] pairs, [false,false] denotes EOF
 #
 
-require 'iconv'
-
 module MOF
 module Scanner
+
+  require 'iconv' unless String.method_defined? :encode
+
   def fill_queue
     if @file.eof?
 #      $stderr.puts "eof ! #{@fstack.size}"
@@ -41,7 +42,13 @@ module Scanner
 
 #    $stderr.puts "fill_queue(#{@line.split('').inspect})"
     @line.chomp!  # remove $/
-    @line = Iconv.conv( "ISO-8859-1", @iconv, @line ) if @iconv
+    if @iconv
+      if String.method_defined? encode
+        @line = @line.encode( "ISO-8859-1", @iconv )
+      else
+        @line = Iconv.conv( "ISO-8859-1", @iconv, @line )
+      end
+    end
 #    $stderr.puts "scan(#{@line})" unless @quiet
     scanner = StringScanner.new(@line)
 
