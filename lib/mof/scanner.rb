@@ -25,9 +25,11 @@ module Scanner
   require 'iconv' unless String.method_defined? :encode
 
   def fill_queue
-    if @file.eof?
+    if @file.closed? || @file.eof?
 #      $stderr.puts "eof ! #{@fstack.size}"
-      @file.close unless @file == $stdin
+      unless @file.closed?
+        @file.close unless @file == $stdin
+      end
       unless @fstack.empty?
 	@file, @name, @lineno, @iconv, $/, @result = @fstack.pop
 #	$stderr.puts "fill! #{@fstack.size}, #{@name}@#{@lineno}"
