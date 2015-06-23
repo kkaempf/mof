@@ -45,7 +45,7 @@ module Scanner
 #    $stderr.puts "fill_queue(#{@line.split('').inspect})"
     @line.chomp!  # remove $/
     if @iconv
-      if String.method_defined? encode
+      if String.method_defined? 'encode'
         @line = @line.encode( "ISO-8859-1", @iconv )
       else
         @line = Iconv.conv( "ISO-8859-1", @iconv, @line )
