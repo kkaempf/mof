@@ -22,6 +22,7 @@ See http://www.dmtf.org/education/mof}
 
   s.add_development_dependency('rake')
   s.add_development_dependency('bundler')
+  s.add_development_dependency('racc')
 
   s.files         = `git ls-files`.split("\n") << "lib/mof/parser.rb"
   s.files.reject! { |fn| fn == '.gitignore' }
