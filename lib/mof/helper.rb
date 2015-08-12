@@ -80,6 +80,11 @@ module Helper
     elsif bom == "\377\376"
       @iconv = "UTF-16LE"
       $/ = "\r\0\n\0"
+    elsif ! has_valid_utf8(@name)
+      $stderr.puts "#{name} contains invalid UTF-8, treating as ISO-8859-1"
+      @iconv = "ISO-8859-1"
+      @file.rewind
+      $/ = "\n"
     else
       @file.rewind
       @iconv = nil
@@ -87,7 +92,23 @@ module Helper
     end
     @style = :wmi if @iconv
     #  $stderr.puts "$/(#{$/.split('').inspect})"
-    
+
+  end
+
+  def has_valid_utf8 name
+    valid = true
+
+    begin
+      # throws on invalid byte sequences such as 0x91 / 0x92 (smartquotes)
+      # and 0xAE (copyright) that may be present in Microsoft ISO-8859-1 MOFs
+      File.open(name, 'r:UTF-8', &:read).split('') << ''
+    rescue => e
+      if e.class == ArgumentError && e.message == 'invalid byte sequence in UTF-8'
+        valid = false
+      end
+    end
+
+    valid
   end
   
   #----------------------------------------------------------
