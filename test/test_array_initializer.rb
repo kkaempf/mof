@@ -15,7 +15,7 @@ class TestQualifiers < Test::Unit::TestCase
   def test_parse
     result = @parser.parse @moffiles
     assert result
-    name,res = result.shift
+    _,res = result.shift
     # parsed one class
     assert_equal 1, res.classes.size
     c = res.classes.shift
